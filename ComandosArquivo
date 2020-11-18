@@ -12,3 +12,4 @@ fwrite() - Escreve um bloco de dados no arquivo.
 fseek() - Reposiciona o ponteiro.
 rewind() - Reposiciona o ponteiro para o início do arquivo.
 ftell() - Retorna a posição do ponteiro.
+ferror() - Retorna verdadeiro se der erro durante alguma operação com arquivo.
