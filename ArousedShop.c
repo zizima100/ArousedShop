@@ -6,17 +6,17 @@
 typedef struct
 {
     char nome[50];
-    char cpf[11];
-    char telefone[9];
-    char email[50];
-}Venda;
+    char codigo[6];
+}Produto;
 
 typedef struct
 {
-    int quantidade;
-    float valorCompra;
+    Produto produto;
+    int quantidadeVendida;
     float valorVenda;
-}Produto;
+    float valorCompra;
+    float lucro;
+}Venda;
 
 void AdicionarVenda()
 {
