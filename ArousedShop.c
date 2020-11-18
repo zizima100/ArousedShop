@@ -20,7 +20,35 @@ typedef struct
 
 void AdicionarVenda()
 {
+    int select;
 
+    do
+    {
+        system("clear");
+        printf("+===============+\n");
+        printf("|Adicionar Venda|\n");
+        printf("+===============+\n");
+        printf("\n\nSelecione uma opção:\n");
+        printf("[ 0 ] - Voltar para o menu venda\n");
+        printf("[ 1 ] - Continuar\n");
+
+        printf("\nResposta: ");
+        scanf("%d", &select);
+        getchar();
+
+        switch (select)
+        {
+        case 0:
+            continue;
+        case 1:
+            break;
+        default:
+            select = -1;
+            printf("Digite uma opção válida. . .");
+            getchar();
+            continue;
+        }
+    } while (select != 0);
 }
 
 void ListarVenda()
@@ -30,17 +58,68 @@ void ListarVenda()
 
 void RemoverVenda()
 {
+    int select;
 
-}
+    do
+    {
+        system("clear");
+        printf("+=============+\n");
+        printf("|Remover Venda|\n");
+        printf("+=============+\n");
+        printf("\n\nSelecione uma opção:\n");
+        printf("[ 0 ] - Voltar para o menu venda\n");
+        printf("[ 1 ] - Continuar\n");
 
-void CadastrarVenda()
-{
+        printf("\nResposta: ");
+        scanf("%d", &select);
+        getchar();
 
+        switch (select)
+        {
+        case 0:
+            continue;
+        case 1:
+            break;
+        default:
+            select = -1;
+            printf("Digite uma opção válida. . .");
+            getchar();
+            continue;
+        }
+    } while (select != 0);
 }
 
 void AdicionarProduto()
 {
+    int select;
 
+    do
+    {
+        system("clear");
+        printf("+=================+\n");
+        printf("|Adicionar Produto|\n");
+        printf("+=================+\n");
+        printf("\n\nSelecione uma opção:\n");
+        printf("[ 0 ] - Voltar para o menu produto\n");
+        printf("[ 1 ] - Continuar\n");
+
+        printf("\nResposta: ");
+        scanf("%d", &select);
+        getchar();
+
+        switch (select)
+        {
+        case 0:
+            continue;
+        case 1:
+            break;
+        default:
+            select = -1;
+            printf("Digite uma opção válida. . .");
+            getchar();
+            continue;
+        }
+    } while (select != 0);
 }
 
 void ListarProduto()
@@ -50,13 +129,37 @@ void ListarProduto()
 
 void RemoverProduto()
 {
+    int select;
 
+    do
+    {
+        system("clear");
+        printf("+===============+\n");
+        printf("|Remover Produto|\n");
+        printf("+===============+\n");
+        printf("\n\nSelecione uma opção:\n");
+        printf("[ 0 ] - Voltar para o menu produto\n");
+        printf("[ 1 ] - Continuar\n");
+
+        printf("\nResposta: ");
+        scanf("%d", &select);
+        getchar();
+
+        switch (select)
+        {
+        case 0:
+            continue;
+        case 1:
+            break;
+        default:
+            select = -1;
+            printf("Digite uma opção válida. . .");
+            getchar();
+            continue;
+        }
+    } while (select != 0);
 }
 
-void CadastrarProduto()
-{
-
-}
 
 void MenuVenda()
 {
