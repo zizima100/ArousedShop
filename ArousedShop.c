@@ -252,9 +252,9 @@ int main()
     do
     {
         system("clear");
-        printf("+==============+\n");
-        printf("|Menu Principal|\n");
-        printf("+==============+\n");
+        printf("+=============================+\n");
+        printf("|Menu Principal - Aroused Shop|\n");
+        printf("+=============================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Sair do Programa\n");
         printf("[ 1 ] - Acessar Venda\n");
