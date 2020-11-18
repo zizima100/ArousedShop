@@ -1,0 +1,13 @@
+Fazer um pequeno sistema.
+Precisa ter documentação.
+Precisa ter Diagrama de Casos de Uso.
+Precisa ter chaves primárias - Tipo RA ou CPF.
+Precisa fazer um diagrama do tipo UML.
+
+Sistema da informação.
+
+Escolher um tema e fazer para o tema escolhido um pequeno sistema de informação que irá manter os dados em arquivos (2 arquivos de dados correlacionados - um que guarda estoque e outro que guarda cliente) e deverá ter uma documentação que envolva MER e Diagrama de Casos de Uso.
+
+Conceitos Fundamentais:
+- Chave primárioa: informação que serve para identificar unicamente um item entre todos os itens de um conjunto.
+- Chave estrangeira: é a chave primaria de um conjunto de itens, quando presente em OUTRO conjunto de itens, ela serve para associar itens de um conjunto de itens do outro conjunto.
