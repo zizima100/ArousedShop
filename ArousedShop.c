@@ -6,15 +6,16 @@
 typedef struct
 {
     char nome[50];
-    char codigo[6];
+    char codigoProduto[6];
+    float valorVenda;
+    float valorCompra;
 }Produto;
 
 typedef struct
 {
-    char codigo[6];
+    char codigoPrdVendido[6];
+    char codigoVenda[6];
     int quantidadeVendida;
-    float valorVenda;
-    float valorCompra;
     float lucro;
 }Venda;
 
@@ -60,16 +61,14 @@ void AdicionarVenda()
         {
             system("clear");
             printf("DEBUG - ARQUIVO VENDAS ABERTO");
-            printf("\n\nDigite o código do produto [6 Dígitos]: ");
-            gets(v.codigo);
-            v.codigo[strcspn(v.codigo, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            printf("\n\nDigite o código do produto vendido [6 Dígitos]: ");
+            gets(v.codigoPrdVendido);
+            v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            printf("\n\nDigite o código da venda [6 Dígitos]: ");
+            gets(v.codigoVenda);
+            v.codigoVenda[strcspn(v.codigoVenda, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
             printf("\n\nDigite a quantidade vendida: ");
             scanf("%d%*c", &v.quantidadeVendida); // %*c Le a info, mas n armazena. Basicamente um getchar();
-            printf("\n\nDigite o valor de compra: ");
-            scanf("%f%*c", &v.valorCompra);
-            printf("\n\nDigite o valor de venda: ");
-            scanf("%f%*c", &v.valorVenda);
-            v.lucro = (v.valorVenda - v.valorCompra) * v.quantidadeVendida;
             fwrite(&v, sizeof(Venda), 1, arquivo); // 1 = Quantos Structs serão armazenados.
             if(ferror(arquivo))
                 printf("\nDeu erro na gravação da vendas. . .");
@@ -107,11 +106,10 @@ void ListarVendas()
             {
                 if(eof != 0)
                 {
-                    printf("========\nCódigo da Venda: %s", v.codigo);
-                    printf("\nQuantidade Vendida: %d", v.quantidadeVendida);
-                    printf("\nValor Compra: R$%.2f", v.valorCompra);
-                    printf("\nValor Venda: R$%.2f", v.valorVenda);
-                    printf("\nLucro Total: R$%.2f\n", v.lucro);
+                    printf("========\nCódigo do Produto: %s.", v.codigoPrdVendido);
+                    printf("\nCódigo da Venda: %s.", v.codigoVenda);
+                    printf("\nQuantidade Vendida: %d\n", v.quantidadeVendida);
+                    //printf("\nLucro Total: R$%.2f\n", v.lucro); - Implementar no futuro quando juntar com produto.
                 }
             }
         }
@@ -160,6 +158,9 @@ void RemoverVenda()
 void AdicionarProduto()
 {
     int select;
+    Produto p;
+
+    FILE *arquivo;
 
     do
     {
@@ -187,12 +188,76 @@ void AdicionarProduto()
             getchar();
             continue;
         }
+
+        arquivo = fopen("produtos", "a+b");
+
+        if(arquivo == NULL)
+            printf("ERRO NA ABERTURA DO ARQUIVO");
+        else
+        {
+            system("clear");
+            printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
+            printf("\n\nDigite o código do produto [6 Dígitos]: ");
+            gets(p.codigoProduto);
+            p.codigoProduto[strcspn(p.codigoProduto, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            printf("\n\nDigite o nome do produto: ");
+            gets(p.nome);
+            p.nome[strcspn(p.nome, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            printf("\n\nDigite o valor de compra: ");
+            scanf("%f%*c", &p.valorCompra); // %*c Le a info, mas n armazena. Basicamente um getchar();
+            printf("\n\nDigite o valor de venda: ");
+            scanf("%f%*c", &p.valorVenda); // %*c Le a info, mas n armazena. Basicamente um getchar();
+            fwrite(&p, sizeof(Produto), 1, arquivo); // 1 = Quantos Structs serão armazenados.
+            if(ferror(arquivo))
+                printf("\nDeu erro na gravação da vendas. . .");
+            else
+                printf("\nDeu bom na gravação da venda!");
+            if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+                printf("\nArquivo fechado Com sucesso!");
+            else
+                printf("\nErro no fechamento do arquivo. . .");
+        }
     } while (select != 0);
 }
 
 void ListarProdutos()
 {
+    int eof; // Registra o fim do arquivo lido.
+    Produto p;
 
+    FILE *arquivo;
+
+    arquivo = fopen("produtos", "a+b");
+    if(arquivo == NULL)
+        printf("ERRO NA ABERTURA DO ARQUIVO");
+    else
+    {
+        system("clear");
+        printf("DEBUG - ARQUIVO PRODUTO ABERTO\n");
+        
+        while (!feof(arquivo)) // Enquanto for diferente da indicação do final do arquivo.
+        {
+            eof = fread(&p, sizeof(p), 1, arquivo); // 1 = Quantos structs setão lidos.
+            if (ferror(arquivo))
+                printf("\n\nErro na leitura do arquivo vendas. . .");
+            else
+            {
+                if(eof != 0)
+                {
+                    printf("========\nCódigo do Produto: %s", p.nome);
+                    printf("\nCódigo do Produto: %s", p.codigoProduto);
+                    printf("\nValor Compra: R$%.2f", p.valorCompra);
+                    printf("\nValor Venda: R$%.2f\n", p.valorVenda);
+                }
+            }
+        }
+        getchar();
+        if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            printf("\nDEBUG - Arquivo Fechado Com sucesso");
+        else
+            printf("\nErro no fechamento");
+        getchar();
+    }
 }
 
 void RemoverProduto()
