@@ -29,9 +29,9 @@ void AdicionarVenda()
     do
     {
         system("clear");
-        printf("+===============+\n");
-        printf("|Adicionar Venda|\n");
-        printf("+===============+\n");
+        printf("+=========================+\n");
+        printf("|     Adicionar Venda     |\n");
+        printf("+=========================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Voltar para o menu venda\n");
         printf("[ 1 ] - Continuar\n");
@@ -75,7 +75,10 @@ void AdicionarVenda()
             else
                 printf("\nDeu bom na gravação da venda!");
             if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            {
                 printf("\nArquivo fechado Com sucesso!");
+                getchar();
+            }
             else
                 printf("\nErro no fechamento do arquivo. . .");
         }
@@ -129,9 +132,9 @@ void RemoverVenda()
     do
     {
         system("clear");
-        printf("+=============+\n");
-        printf("|Remover Venda|\n");
-        printf("+=============+\n");
+        printf("+=======================+\n");
+        printf("|     Remover Venda     |\n");
+        printf("+=======================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Voltar para o menu venda\n");
         printf("[ 1 ] - Continuar\n");
@@ -165,9 +168,9 @@ void AdicionarProduto()
     do
     {
         system("clear");
-        printf("+=================+\n");
-        printf("|Adicionar Produto|\n");
-        printf("+=================+\n");
+        printf("+===========================+\n");
+        printf("|     Adicionar Produto     |\n");
+        printf("+===========================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Voltar para o menu produto\n");
         printf("[ 1 ] - Continuar\n");
@@ -213,7 +216,10 @@ void AdicionarProduto()
             else
                 printf("\nDeu bom na gravação da venda!");
             if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            {
                 printf("\nArquivo fechado Com sucesso!");
+                getchar();
+            }
             else
                 printf("\nErro no fechamento do arquivo. . .");
         }
@@ -251,9 +257,10 @@ void ListarProdutos()
                 }
             }
         }
-        getchar();
         if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+        {
             printf("\nDEBUG - Arquivo Fechado Com sucesso");
+        }
         else
             printf("\nErro no fechamento");
         getchar();
@@ -267,11 +274,11 @@ void RemoverProduto()
     do
     {
         system("clear");
-        printf("+===============+\n");
-        printf("|Remover Produto|\n");
-        printf("+===============+\n");
+        printf("+=========================+\n");
+        printf("|     Remover Produto     |\n");
+        printf("+=========================+\n");
         printf("\n\nSelecione uma opção:\n");
-        printf("[ 0 ] - Voltar para o menu produto\n");
+        printf("[ 0 ] - Voltar para o menu produtos\n");
         printf("[ 1 ] - Continuar\n");
 
         printf("\nResposta: ");
@@ -301,14 +308,14 @@ void MenuVenda()
     do
     {
         system("clear");
-        printf("+==========+\n");
-        printf("|Menu Venda|\n");
-        printf("+==========+\n");
+        printf("+====================+\n");
+        printf("|     Menu Venda     |\n");
+        printf("+====================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Voltar para o menu principal\n");
-        printf("[ 1 ] - Adicionar Venda\n");
-        printf("[ 2 ] - Listar Venda\n");
-        printf("[ 3 ] - Remover Venda\n");
+        printf("[ 1 ] - Adicionar Vendas\n");
+        printf("[ 2 ] - Listar Vendas\n");
+        printf("[ 3 ] - Remover Vendas\n");
 
         printf("\nResposta: ");
         scanf("%d", &select);
@@ -343,14 +350,14 @@ void MenuProduto()
     do
     {
         system("clear");
-        printf("+============+\n");
-        printf("|Menu Produto|\n");
-        printf("+============+\n");
+        printf("+======================+\n");
+        printf("|     Menu Produto     |\n");
+        printf("+======================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Voltar para o menu principal\n");
-        printf("[ 1 ] - Adicionar Produto\n");
-        printf("[ 2 ] - Listar Produto\n");
-        printf("[ 3 ] - Remover Produto\n");
+        printf("[ 1 ] - Adicionar Produtos\n");
+        printf("[ 2 ] - Listar Produtos\n");
+        printf("[ 3 ] - Remover Produtos\n");
         
         printf("\nResposta: ");
         scanf("%d", &select);
@@ -385,13 +392,13 @@ int main()
     do
     {
         system("clear");
-        printf("+=============================+\n");
-        printf("|Menu Principal - Aroused Shop|\n");
-        printf("+=============================+\n");
+        printf("+=======================================+\n");
+        printf("|     Menu Principal - Aroused Shop     |\n");
+        printf("+=======================================+\n");
         printf("\n\nSelecione uma opção:\n");
         printf("[ 0 ] - Sair do Programa\n");
-        printf("[ 1 ] - Acessar Venda\n");
-        printf("[ 2 ] - Acessar Produtos\n");
+        printf("[ 1 ] - Acessar Menu Vendas\n");
+        printf("[ 2 ] - Acessar Menu Produtos\n");
 
         printf("\nResposta: ");
         scanf("%d", &select);
