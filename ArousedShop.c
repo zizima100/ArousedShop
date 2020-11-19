@@ -14,8 +14,8 @@ typedef struct
 typedef struct
 {
     char codigoPrdVendido[6];
-    char codigoVenda[6];
     int quantidadeVendida;
+    char codigoVenda[6];
     float lucro;
 }Venda;
 
