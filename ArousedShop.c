@@ -9,22 +9,22 @@ typedef struct
     char codigoProduto[6];
     float valorVenda;
     float valorCompra;
-}Produto;
+} Produto;
 
 typedef struct
 {
     char codigoPrdVendido[6];
     int quantidadeVendida;
-    char codigoVenda[6];
+    int codigoVenda;
     float lucro;
-}Venda;
+} Venda;
 
 void AdicionarVenda()
 {
-    int select;
+    int select, size, n = 1;
     Venda v;
 
-    FILE *arquivo;
+    FILE *arquivo, *codigo;
 
     do
     {
@@ -53,9 +53,28 @@ void AdicionarVenda()
             continue;
         }
 
+        codigo = fopen("codigo", "a+b");
+
+        if (NULL != codigo)
+        {
+            fseek(codigo, 0, SEEK_END);
+            size = ftell(codigo);
+
+            if (0 == size)
+            {
+                printf("Arquivo Criado\n");
+                fwrite(&n, sizeof(n), 1, codigo);
+            }
+        }
+
+        rewind(codigo);
+        fread(&n, sizeof(n), 1, codigo);
+
+        fclose(codigo);
+
         arquivo = fopen("vendas", "a+b");
 
-        if(arquivo == NULL)
+        if (arquivo == NULL)
             printf("ERRO NA ABERTURA DO ARQUIVO");
         else
         {
@@ -64,23 +83,30 @@ void AdicionarVenda()
             printf("\n\nDigite o código do produto vendido [6 Dígitos]: ");
             gets(v.codigoPrdVendido);
             v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
-            printf("\n\nDigite o código da venda [6 Dígitos]: ");
-            gets(v.codigoVenda);
-            v.codigoVenda[strcspn(v.codigoVenda, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            v.codigoVenda = n;
             printf("\n\nDigite a quantidade vendida: ");
-            scanf("%d%*c", &v.quantidadeVendida); // %*c Le a info, mas n armazena. Basicamente um getchar();
+            scanf("%d%*c", &v.quantidadeVendida);  // %*c Le a info, mas n armazena. Basicamente um getchar();
             fwrite(&v, sizeof(Venda), 1, arquivo); // 1 = Quantos Structs serão armazenados.
-            if(ferror(arquivo))
+            if (ferror(arquivo))
                 printf("\nDeu erro na gravação da vendas. . .");
             else
                 printf("\nDeu bom na gravação da venda!");
-            if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            if (!fclose(arquivo)) // Fechamento com sucesso retorna 0.
             {
                 printf("\nArquivo fechado Com sucesso!");
                 getchar();
             }
             else
                 printf("\nErro no fechamento do arquivo. . .");
+
+            n++;
+
+            fopen("codigo", "w");
+            fwrite(&n, sizeof(n), 1, codigo);
+            fclose(codigo);
+
+            getchar();
+            return 0;
         }
     } while (select != 0);
 }
@@ -93,13 +119,13 @@ void ListarVendas()
     FILE *arquivo;
 
     arquivo = fopen("vendas", "a+b");
-    if(arquivo == NULL)
+    if (arquivo == NULL)
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
         system("clear");
         printf("DEBUG - ARQUIVO VENDAS ABERTO\n");
-        
+
         while (!feof(arquivo)) // Enquanto for diferente da indicação do final do arquivo.
         {
             eof = fread(&v, sizeof(v), 1, arquivo); // 1 = Quantos structs setão lidos.
@@ -107,17 +133,17 @@ void ListarVendas()
                 printf("\n\nErro na leitura do arquivo vendas. . .");
             else
             {
-                if(eof != 0)
+                if (eof != 0)
                 {
                     printf("========\nCódigo do Produto: %s.", v.codigoPrdVendido);
-                    printf("\nCódigo da Venda: %s.", v.codigoVenda);
+                    printf("\nCódigo da Venda: %d.", v.codigoVenda);
                     printf("\nQuantidade Vendida: %d\n", v.quantidadeVendida);
                     //printf("\nLucro Total: R$%.2f\n", v.lucro); - Implementar no futuro quando juntar com produto.
                 }
             }
         }
         getchar();
-        if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+        if (!fclose(arquivo)) // Fechamento com sucesso retorna 0.
             printf("\nDEBUG - Arquivo Fechado Com sucesso");
         else
             printf("\nErro no fechamento");
@@ -194,7 +220,7 @@ void AdicionarProduto()
 
         arquivo = fopen("produtos", "a+b");
 
-        if(arquivo == NULL)
+        if (arquivo == NULL)
             printf("ERRO NA ABERTURA DO ARQUIVO");
         else
         {
@@ -209,13 +235,13 @@ void AdicionarProduto()
             printf("\n\nDigite o valor de compra: ");
             scanf("%f%*c", &p.valorCompra); // %*c Le a info, mas n armazena. Basicamente um getchar();
             printf("\n\nDigite o valor de venda: ");
-            scanf("%f%*c", &p.valorVenda); // %*c Le a info, mas n armazena. Basicamente um getchar();
+            scanf("%f%*c", &p.valorVenda);           // %*c Le a info, mas n armazena. Basicamente um getchar();
             fwrite(&p, sizeof(Produto), 1, arquivo); // 1 = Quantos Structs serão armazenados.
-            if(ferror(arquivo))
+            if (ferror(arquivo))
                 printf("\nDeu erro na gravação da vendas. . .");
             else
                 printf("\nDeu bom na gravação da venda!");
-            if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            if (!fclose(arquivo)) // Fechamento com sucesso retorna 0.
             {
                 printf("\nArquivo fechado Com sucesso!");
                 getchar();
@@ -234,13 +260,13 @@ void ListarProdutos()
     FILE *arquivo;
 
     arquivo = fopen("produtos", "a+b");
-    if(arquivo == NULL)
+    if (arquivo == NULL)
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
         system("clear");
         printf("DEBUG - ARQUIVO PRODUTO ABERTO\n");
-        
+
         while (!feof(arquivo)) // Enquanto for diferente da indicação do final do arquivo.
         {
             eof = fread(&p, sizeof(p), 1, arquivo); // 1 = Quantos structs setão lidos.
@@ -248,7 +274,7 @@ void ListarProdutos()
                 printf("\n\nErro na leitura do arquivo vendas. . .");
             else
             {
-                if(eof != 0)
+                if (eof != 0)
                 {
                     printf("========\nCódigo do Produto: %s", p.nome);
                     printf("\nCódigo do Produto: %s", p.codigoProduto);
@@ -257,7 +283,7 @@ void ListarProdutos()
                 }
             }
         }
-        if(!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+        if (!fclose(arquivo)) // Fechamento com sucesso retorna 0.
         {
             printf("\nDEBUG - Arquivo Fechado Com sucesso");
         }
@@ -299,7 +325,6 @@ void RemoverProduto()
         }
     } while (select != 0);
 }
-
 
 void MenuVenda()
 {
@@ -358,7 +383,7 @@ void MenuProduto()
         printf("[ 1 ] - Adicionar Produtos\n");
         printf("[ 2 ] - Listar Produtos\n");
         printf("[ 3 ] - Remover Produtos\n");
-        
+
         printf("\nResposta: ");
         scanf("%d", &select);
         getchar();
