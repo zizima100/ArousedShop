@@ -384,15 +384,29 @@ void RemoverProduto()
 
         if (posicaoCodigo >= 0)
         {
+            system("clear");
+
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
 
             fp = fopen("produtos", "a+b");
 
-            fseek(fp, posicaoCodigo * sizeof(p), SEEK_SET);
+            fseek(fp, posicaoCodigo * sizeof(Produto), SEEK_SET);
 
-            fread(&p, sizeof(p), 1, fp);
+            fread(&p, sizeof(Produto), 1, fp);
 
             printf("\n\nNome do produto: %s.", p.nome);
+
+            printf("\n\nEstado do produto: ");
+            if(p.produtoAtivo == 1)
+                printf("Ativado.");
+            else
+                printf("Desativado.");
+
+            printf("\n\nDigite o estado atual do produto: ");
+            scanf("%d%*c", &p.produtoAtivo);
+
+            fseek(fp, posicaoCodigo * sizeof(Produto), SEEK_SET);
+            fwrite(&p, sizeof(Produto), 1, fp);
 
             fclose(fp);
         }
