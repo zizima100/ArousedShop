@@ -388,7 +388,7 @@ void RemoverProduto()
 
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
 
-            fp = fopen("produtos", "a+b");
+            fp = fopen("produtos", "r+b");
 
             fseek(fp, posicaoCodigo * sizeof(Produto), SEEK_SET);
 
