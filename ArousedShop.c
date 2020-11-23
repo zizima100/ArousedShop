@@ -9,6 +9,7 @@ typedef struct
     char codigoProduto[6];
     float valorVenda;
     float valorCompra;
+    int produtoAtivo;
 } Produto;
 
 typedef struct
@@ -17,12 +18,14 @@ typedef struct
     int quantidadeVendida;
     int codigoVenda;
     float lucro;
+    int vendaAtiva;
 } Venda;
 
 int ProcurarProduto(char codigoProduto[6])
 {
-    Produto p;
     FILE *procura;
+    Produto p;
+
     int eof, posicaoEncontrado = 0;
 
     procura = fopen("produtos", "rb");
@@ -47,6 +50,7 @@ int ProcurarProduto(char codigoProduto[6])
                 {
                     if (strcmp(codigoProduto, p.codigoProduto) == 0)
                     {
+                        // printf("\n\nENCONTROU O MALDITO");
                         fclose(procura);
                         return posicaoEncontrado;
                     }
@@ -64,10 +68,10 @@ int ProcurarProduto(char codigoProduto[6])
 
 void AdicionarVenda()
 {
-    int select, size, n = 1;
+    FILE *arquivo, *codigo;
     Venda v;
 
-    FILE *arquivo, *codigo;
+    int select, size, n = 1;
 
     do
     {
@@ -129,6 +133,7 @@ void AdicionarVenda()
             v.codigoVenda = n;
             printf("\n\nDigite a quantidade vendida: ");
             scanf("%d%*c", &v.quantidadeVendida);  // %*c Le a info, mas n armazena. Basicamente um getchar();
+            v.vendaAtiva = 1;
             fwrite(&v, sizeof(Venda), 1, arquivo); // 1 = Quantos Structs serão armazenados.
             if (ferror(arquivo))
                 printf("\nDeu erro na gravação da vendas. . .");
@@ -156,10 +161,10 @@ void AdicionarVenda()
 
 void ListarVendas()
 {
-    int eof; // Registra o fim do arquivo lido.
+    FILE *arquivo;
     Venda v;
 
-    FILE *arquivo;
+    int eof; // Registra o fim do arquivo lido.
 
     arquivo = fopen("vendas", "a+b");
     if (arquivo == NULL)
@@ -229,10 +234,10 @@ void RemoverVenda()
 
 void AdicionarProduto()
 {
-    int select;
+    FILE *arquivo;
     Produto p;
 
-    FILE *arquivo;
+    int select;
 
     do
     {
@@ -274,17 +279,18 @@ void AdicionarProduto()
             p.codigoProduto[strcspn(p.codigoProduto, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
             printf("\n\nDigite o nome do produto: ");
             gets(p.nome);
-            p.nome[strcspn(p.nome, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+            p.nome[strcspn(p.nome, "\n")] = '\0';
             printf("\n\nDigite o valor de compra: ");
-            scanf("%f%*c", &p.valorCompra); // %*c Le a info, mas n armazena. Basicamente um getchar();
+            scanf("%f%*c", &p.valorCompra);
             printf("\n\nDigite o valor de venda: ");
-            scanf("%f%*c", &p.valorVenda);           // %*c Le a info, mas n armazena. Basicamente um getchar();
-            fwrite(&p, sizeof(Produto), 1, arquivo); // 1 = Quantos Structs serão armazenados.
+            scanf("%f%*c", &p.valorVenda);
+            p.produtoAtivo = 1;
+            fwrite(&p, sizeof(Produto), 1, arquivo);
             if (ferror(arquivo))
                 printf("\nDeu erro na gravação da vendas. . .");
             else
                 printf("\nDeu bom na gravação da venda!");
-            if (!fclose(arquivo)) // Fechamento com sucesso retorna 0.
+            if (!fclose(arquivo))
             {
                 printf("\nArquivo fechado Com sucesso!");
                 getchar();
@@ -297,10 +303,10 @@ void AdicionarProduto()
 
 void ListarProdutos()
 {
-    int eof; // Registra o fim do arquivo lido.
+    FILE *arquivo;
     Produto p;
 
-    FILE *arquivo;
+    int eof; // Registra o fim do arquivo lido.
 
     arquivo = fopen("produtos", "a+b");
     if (arquivo == NULL)
@@ -319,7 +325,7 @@ void ListarProdutos()
             {
                 if (eof != 0)
                 {
-                    printf("========\nCódigo do Produto: %s", p.nome);
+                    printf("========\nNome do Produto: %s", p.nome);
                     printf("\nCódigo do Produto: %s", p.codigoProduto);
                     printf("\nValor Compra: R$%.2f", p.valorCompra);
                     printf("\nValor Venda: R$%.2f\n", p.valorVenda);
@@ -338,6 +344,9 @@ void ListarProdutos()
 
 void RemoverProduto()
 {
+    FILE *fp;
+    Produto p;
+    
     int select;
     char codPesquisado[6];
     int posicaoCodigo;
@@ -368,7 +377,7 @@ void RemoverProduto()
             continue;
         }
 
-        printf("Digite o código do produto que deseja remover: ");
+        printf("\nDigite o código do produto que deseja remover: ");
         gets(codPesquisado);
 
         posicaoCodigo = ProcurarProduto(codPesquisado);
@@ -376,6 +385,16 @@ void RemoverProduto()
         if (posicaoCodigo >= 0)
         {
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
+
+            fp = fopen("produtos", "a+b");
+
+            fseek(fp, posicaoCodigo * sizeof(p), SEEK_SET);
+
+            fread(&p, sizeof(p), 1, fp);
+
+            printf("\n\nNome do produto: %s.", p.nome);
+
+            fclose(fp);
         }
         else
         {
