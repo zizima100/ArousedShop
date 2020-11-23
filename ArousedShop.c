@@ -19,6 +19,49 @@ typedef struct
     float lucro;
 } Venda;
 
+int ProcurarProduto(char codigoProduto[6])
+{
+    Produto p;
+    FILE *procura;
+    int eof, posicaoEncontrado = 0;
+
+    procura = fopen("produtos", "rb");
+
+    if (procura == NULL)
+    {
+        return -1;
+    }
+    else
+    {
+        while (!feof(procura)) // Enquanto for diferente da indicação do final do arquivo.
+        {
+            eof = fread(&p, sizeof(p), 1, procura);
+            if (ferror(procura))
+            {
+                printf("\n\nErro na leitura do arquivo produtos. . .");
+                getchar();
+            }
+            else
+            {
+                if (eof != 0)
+                {
+                    if (strcmp(codigoProduto, p.codigoProduto) == 0)
+                    {
+                        fclose(procura);
+                        return posicaoEncontrado;
+                    }
+                }
+                else
+                {
+                    fclose(procura);
+                    return -1;
+                }
+            }
+            posicaoEncontrado++;
+        }
+    }
+}
+
 void AdicionarVenda()
 {
     int select, size, n = 1;
@@ -296,6 +339,8 @@ void ListarProdutos()
 void RemoverProduto()
 {
     int select;
+    char codPesquisado[6];
+    int posicaoCodigo;
 
     do
     {
@@ -308,8 +353,7 @@ void RemoverProduto()
         printf("[ 1 ] - Continuar\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -323,6 +367,21 @@ void RemoverProduto()
             getchar();
             continue;
         }
+
+        printf("Digite o código do produto que deseja remover: ");
+        gets(codPesquisado);
+
+        posicaoCodigo = ProcurarProduto(codPesquisado);
+
+        if (posicaoCodigo >= 0)
+        {
+            printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
+        }
+        else
+        {
+            printf("\n\nCódigo %s não encontrado. . .", codPesquisado);
+        }
+        getchar();
     } while (select != 0);
 }
 
