@@ -89,18 +89,15 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
             break;
         if (p.produtoAtivo == 0)
         {
-            printf("\n\nEncontrei um meliante desativado na posição: %d.", posicaoEncontrada);
+            // printf("\n\nEncontrei um meliante desativado na posição: %d.", posicaoEncontrada);
             fclose(procura);
             return posicaoEncontrada;
         }
-        else
-        {
-            printf("\n\nNenhum meliante encontrado.");
-            fclose(procura);
-            return -1;
-        }
         posicaoEncontrada++;
     }
+    // printf("\n\nNenhum meliante encontrado.");
+    fclose(procura);
+    return -1;
 }
 
 int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a partir de seu código.
@@ -229,10 +226,13 @@ void AdicionarVenda()
 
 void ListarVendas()
 {
-    FILE *arquivo;
+    FILE *arquivo, *produto;
     Venda v;
+    Produto p;
 
     arquivo = fopen("vendas", "a+b");
+    produto = fopen("produtos", "rb");
+
     if (arquivo == NULL)
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
@@ -246,14 +246,19 @@ void ListarVendas()
                 break;
             if (v.vendaAtiva != 0)
             {
-                printf("\nCódigo do Produto: %s.", v.codigoPrdVendido);
+                fseek(produto, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
+                fread(&p, sizeof(Produto), 1, produto);
+
                 printf("\nCódigo da Venda: %d.", v.codigoVenda);
+                printf("\nProduto Vendido: %s.", p.nome);
+                printf("\nCódigo do Produto Inserido: %s.", v.codigoPrdVendido);
                 printf("\nQuantidade Vendida: %d\n", v.quantidadeVendida);
-                //printf("\nLucro Total: R$%.2f\n", v.lucro); - Implementar no futuro quando juntar com produto.
-                printf("\n========\n");
+                printf("\nLucro: R$%.2f.", (p.valorVenda - p.valorCompra) * v.quantidadeVendida);
+                printf("\n\n========\n");
             }
         }
         fclose(arquivo);
+        fclose(produto);
         getchar();
     }
 }
@@ -421,9 +426,7 @@ void AdicionarProduto()
             fseek(arquivo, VerificarAtvPrd() * sizeof(Produto), SEEK_SET);
             fwrite(&p, sizeof(Produto), 1, arquivo);
         }
-
         fclose(arquivo);
-
         getchar();
     } while (select != 0);
 }
