@@ -37,13 +37,13 @@ int VerificarAtvVnd()
             break;
         if (v.vendaAtiva == 0)
         {
-            printf("\n\nEncontrei uma venda inativa na posição %d.", posProcura);
+            // printf("\n\nEncontrei uma venda inativa na posição %d.", posProcura);
             fclose(fp);
             return posProcura;
         }
         posProcura++;
     }
-    printf("\n\nNão achei venda inativa.");
+    // printf("\n\nNão achei venda inativa.");
     fclose(fp);
     return -1;
 }
@@ -57,8 +57,6 @@ int ProcurarVenda(int codigoVenda)
 
     fp = fopen("vendas", "rb");
 
-    printf("\n\nEntrei na pesquisa de venda.");
-
     while(1)
     {
         fread(&v, sizeof(Venda), 1, fp);
@@ -66,13 +64,11 @@ int ProcurarVenda(int codigoVenda)
             break;
         if(v.codigoVenda == codigoVenda)
         {
-            printf("\nEncontrei o código de venda na posição %d.", posPesquisa);
             fclose(fp);
             return posPesquisa;
         }
         posPesquisa++;
     }
-    printf("\nNão encontrei o código de venda.");
     fclose(fp);
     return -1;
 }
@@ -107,7 +103,7 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
     }
 }
 
-int ProcurarProduto(char codigoProduto[6])
+int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a partir de seu código.
 {
     FILE *procura;
     Produto p;
@@ -264,7 +260,11 @@ void ListarVendas()
 
 void RemoverVenda()
 {
-    int select, codigoVenda;
+    FILE *fp, *produto;
+    Venda v;
+    Produto p;
+
+    int select, codigoVenda, posVenda, posProduto, select2;
 
     do
     {
@@ -286,7 +286,6 @@ void RemoverVenda()
         case 1:
             break;
         default:
-            select = -1;
             printf("Digite uma opção válida. . .");
             getchar();
             continue;
@@ -295,10 +294,67 @@ void RemoverVenda()
         printf("Digite o código da venda: ");
         scanf("%d%*c", &codigoVenda);
 
-        ProcurarVenda(codigoVenda);
+        if(ProcurarVenda(codigoVenda) < 0)
+        {
+            system("clear");
+            printf("Código não encontrado.\n\nVerifique o código da venda na lista de vendas.");
+            printf("\n\nPressione enter para continuar. . .");
+            getchar();
+            return;
+        }
+        else
+        {
+            fp = fopen("vendas", "r+b");
+            produto = fopen("produtos", "rb");
 
-        getchar();
+            fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
+            fread(&v, sizeof(Venda), 1, fp);
 
+            fseek(produto, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
+            fread(&p, sizeof(Produto), 1, produto);
+
+            do
+            {
+                system("clear");
+                printf("======== Removendo Venda ========");
+                printf("\n\nA venda selecionada está na posição: %d.", ProcurarVenda(codigoVenda));
+                printf("\nO produto vendido é: %s.", p.nome);
+                printf("\nO código do produto é: %s.", v.codigoPrdVendido);
+                printf("\nA quantidade vendida é: %d.", v.quantidadeVendida);
+                printf("\nO valor de compra é: R$%.2f.", p.valorCompra);
+                printf("\nO valor de venda é: R$%.2f.", p.valorVenda);
+                printf("\nO lucro é: R$%.2f.", (p.valorVenda - p.valorCompra) * v.quantidadeVendida);
+
+                if(v.vendaAtiva == 1)
+                    printf("\n\nA venda está: ATIVA");
+                else
+                    printf("\n\nA venda está: INATIVA");
+
+                printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Venda\n[ 1 ] = Ativar Venda");
+                printf("\nResposta: ");
+                scanf("%d%*c", &select2);
+
+                switch (select2)
+                {
+                case 0:
+                    v.vendaAtiva = 0;
+                    break;
+                case 1:
+                    v.vendaAtiva = 1;
+                    break;
+                
+                default:
+                    printf("Digite uma opção válida. . .");
+                    continue;
+                }
+            } while (select2 < 0 && select2 > 1);
+            
+            fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
+            fwrite(&v, sizeof(Venda), 1, fp);
+
+            fclose(fp);
+            fclose(produto);
+        }
     } while (select != 0);
 }
 
