@@ -21,6 +21,36 @@ typedef struct
     int vendaAtiva;
 } Venda;
 
+int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
+{
+    FILE *procura;
+    Produto p;
+
+    int posicaoEncontrada = 0;
+
+    procura = fopen("produtos", "rb");
+
+    while (1)
+    {
+        fread(&p, sizeof(Produto), 1, procura);
+        if (feof(procura))
+            break;
+        if (p.produtoAtivo == 0)
+        {
+            printf("\n\nEncontrei um meliante desativado na posição: %d.", posicaoEncontrada);
+            fclose(procura);
+            return posicaoEncontrada;
+        }
+        else
+        {
+            printf("\n\nNenhum meliante encontrado.");
+            fclose(procura);
+            return -1;
+        }
+        posicaoEncontrada++;
+    }
+}
+
 int ProcurarProduto(char codigoProduto[6])
 {
     FILE *procura;
@@ -36,33 +66,21 @@ int ProcurarProduto(char codigoProduto[6])
     }
     else
     {
-        while (!feof(procura)) // Enquanto for diferente da indicação do final do arquivo.
+        while (1)
         {
-            eof = fread(&p, sizeof(p), 1, procura);
-            if (ferror(procura))
+            fread(&p, sizeof(p), 1, procura);
+            if (feof(procura))
+                break;
+            if (strcmp(codigoProduto, p.codigoProduto) == 0)
             {
-                printf("\n\nErro na leitura do arquivo produtos. . .");
-                getchar();
-            }
-            else
-            {
-                if (eof != 0)
-                {
-                    if (strcmp(codigoProduto, p.codigoProduto) == 0)
-                    {
-                        // printf("\n\nENCONTROU O MALDITO");
-                        fclose(procura);
-                        return posicaoEncontrado;
-                    }
-                }
-                else
-                {
-                    fclose(procura);
-                    return -1;
-                }
+                // printf("\n\nENCONTROU O MALDITO");
+                fclose(procura);
+                return posicaoEncontrado;
             }
             posicaoEncontrado++;
         }
+        fclose(procura);
+        return -1;
     }
 }
 
@@ -132,7 +150,7 @@ void AdicionarVenda()
             v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
             v.codigoVenda = n;
             printf("\n\nDigite a quantidade vendida: ");
-            scanf("%d%*c", &v.quantidadeVendida);  // %*c Le a info, mas n armazena. Basicamente um getchar();
+            scanf("%d%*c", &v.quantidadeVendida); // %*c Le a info, mas n armazena. Basicamente um getchar();
             v.vendaAtiva = 1;
             fwrite(&v, sizeof(Venda), 1, arquivo); // 1 = Quantos Structs serão armazenados.
             if (ferror(arquivo))
@@ -267,37 +285,38 @@ void AdicionarProduto()
         }
 
         arquivo = fopen("produtos", "a+b");
+        fclose(arquivo);
 
-        if (arquivo == NULL)
-            printf("ERRO NA ABERTURA DO ARQUIVO");
+        system("clear");
+        printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
+        printf("\n\nDigite o código do produto [6 Dígitos]: ");
+        gets(p.codigoProduto);
+        p.codigoProduto[strcspn(p.codigoProduto, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+        printf("\n\nDigite o nome do produto: ");
+        gets(p.nome);
+        p.nome[strcspn(p.nome, "\n")] = '\0';
+        printf("\n\nDigite o valor de compra: ");
+        scanf("%f%*c", &p.valorCompra);
+        printf("\n\nDigite o valor de venda: ");
+        scanf("%f%*c", &p.valorVenda);
+        p.produtoAtivo = 1;
+
+        arquivo = fopen("produtos", "r+b");
+
+        if (VerificarAtvPrd() < 0)
+        {
+            fseek(arquivo, 0, SEEK_END);
+            fwrite(&p, sizeof(Produto), 1, arquivo);
+        }
         else
         {
-            system("clear");
-            printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
-            printf("\n\nDigite o código do produto [6 Dígitos]: ");
-            gets(p.codigoProduto);
-            p.codigoProduto[strcspn(p.codigoProduto, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
-            printf("\n\nDigite o nome do produto: ");
-            gets(p.nome);
-            p.nome[strcspn(p.nome, "\n")] = '\0';
-            printf("\n\nDigite o valor de compra: ");
-            scanf("%f%*c", &p.valorCompra);
-            printf("\n\nDigite o valor de venda: ");
-            scanf("%f%*c", &p.valorVenda);
-            p.produtoAtivo = 1;
+            fseek(arquivo, VerificarAtvPrd() * sizeof(Produto), SEEK_SET);
             fwrite(&p, sizeof(Produto), 1, arquivo);
-            if (ferror(arquivo))
-                printf("\nDeu erro na gravação da vendas. . .");
-            else
-                printf("\nDeu bom na gravação da venda!");
-            if (!fclose(arquivo))
-            {
-                printf("\nArquivo fechado Com sucesso!");
-                getchar();
-            }
-            else
-                printf("\nErro no fechamento do arquivo. . .");
         }
+
+        fclose(arquivo);
+
+        getchar();
     } while (select != 0);
 }
 
@@ -323,7 +342,7 @@ void ListarProdutos()
                 printf("\n\nErro na leitura do arquivo vendas. . .");
             else
             {
-                if (eof != 0)
+                if (eof != 0 && p.produtoAtivo != 0)
                 {
                     printf("========\nNome do Produto: %s", p.nome);
                     printf("\nCódigo do Produto: %s", p.codigoProduto);
@@ -346,7 +365,7 @@ void RemoverProduto()
 {
     FILE *fp;
     Produto p;
-    
+
     int select;
     char codPesquisado[6];
     int posicaoCodigo;
@@ -397,7 +416,7 @@ void RemoverProduto()
             printf("\n\nNome do produto: %s.", p.nome);
 
             printf("\n\nEstado do produto: ");
-            if(p.produtoAtivo == 1)
+            if (p.produtoAtivo == 1)
                 printf("Ativado.");
             else
                 printf("Desativado.");
