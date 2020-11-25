@@ -30,7 +30,7 @@ int VerificarAtvVnd()
 
     fp = fopen("vendas", "rb");
 
-    while (1)
+    while(1)
     {
         fread(&v, sizeof(Venda), 1, fp);
         if (feof(fp))
@@ -82,7 +82,7 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
     procura = fopen("produtos", "rb");
 
-    while (1)
+    while(1)
     {
         fread(&p, sizeof(Produto), 1, procura);
         if (feof(procura))
@@ -102,35 +102,49 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
 int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a partir de seu código.
 {
-    FILE *procura;
+    FILE *arqProduto;
     Produto p;
 
     int eof, posicaoEncontrado = 0;
 
-    procura = fopen("produtos", "rb");
+    arqProduto = fopen("produtos", "rb");
 
-    if (procura == NULL)
+    if (arqProduto == NULL)
     {
         return -1;
     }
     else
     {
-        while (1)
+        while(1)
         {
-            fread(&p, sizeof(p), 1, procura);
-            if (feof(procura))
+            fread(&p, sizeof(p), 1, arqProduto);
+            if (feof(arqProduto))
                 break;
             if (strcmp(codigoProduto, p.codigoProduto) == 0)
             {
                 // printf("\n\nENCONTROU O MALDITO");
-                fclose(procura);
+                fclose(arqProduto);
                 return posicaoEncontrado;
             }
             posicaoEncontrado++;
         }
-        fclose(procura);
+        fclose(arqProduto);
         return -1;
     }
+}
+
+int ExisteProduto()
+{
+    FILE *arqProduto;
+
+    arqProduto = fopen("produtos", "rb");
+
+    if (arqProduto == NULL)
+    {
+        return 0;
+    }
+    fclose(arqProduto);
+    return 1;
 }
 
 void AdicionarVenda()
@@ -138,7 +152,7 @@ void AdicionarVenda()
     FILE *arquivo, *codigo;
     Venda v;
 
-    int select, size, n = 1;
+    int select, size, codigoVenda = 1;
 
     do
     {
@@ -151,8 +165,7 @@ void AdicionarVenda()
         printf("[ 1 ] - Continuar\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -169,20 +182,20 @@ void AdicionarVenda()
 
         codigo = fopen("codigo", "a+b");
 
-        if (NULL != codigo)
+        if (codigo != NULL)
         {
             fseek(codigo, 0, SEEK_END);
             size = ftell(codigo);
 
-            if (0 == size)
+            if (size == 0)
             {
                 printf("Arquivo Criado\n");
-                fwrite(&n, sizeof(n), 1, codigo);
+                fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
             }
         }
 
         rewind(codigo);
-        fread(&n, sizeof(n), 1, codigo);
+        fread(&codigoVenda, sizeof(codigoVenda), 1, codigo);
 
         fclose(codigo);
 
@@ -194,7 +207,7 @@ void AdicionarVenda()
         printf("\n\nDigite o código do produto vendido [6 Dígitos]: ");
         gets(v.codigoPrdVendido);
         v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0';
-        v.codigoVenda = n;
+        v.codigoVenda = codigoVenda;
         printf("\n\nDigite a quantidade vendida: ");
         scanf("%d%*c", &v.quantidadeVendida);
         v.vendaAtiva = 1;
@@ -213,12 +226,13 @@ void AdicionarVenda()
         }
         fclose(arquivo);
 
-        n++;
+        codigoVenda++;
 
         fopen("codigo", "w");
-        fwrite(&n, sizeof(n), 1, codigo);
+        fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
         fclose(codigo);
 
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
         return 0;
     } while (select != 0);
@@ -239,7 +253,7 @@ void ListarVendas()
     {
         system("clear");
         printf("======== Lista de Vendas ========\n");
-        while (1)
+        while(1)
         {
             fread(&v, sizeof(v), 1, arquivo); // 1 = Quantos structs setão lidos.
             if (feof(arquivo))
@@ -259,6 +273,8 @@ void ListarVendas()
         }
         fclose(arquivo);
         fclose(produto);
+
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     }
 }
@@ -335,7 +351,7 @@ void RemoverVenda()
                 else
                     printf("\n\nA venda está: INATIVA");
 
-                printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Venda\n[ 1 ] = Ativar Venda");
+                printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Venda\n[ 1 ] - Ativar Venda");
                 printf("\nResposta: ");
                 scanf("%d%*c", &select2);
 
@@ -347,13 +363,13 @@ void RemoverVenda()
                 case 1:
                     v.vendaAtiva = 1;
                     break;
-                
+
                 default:
                     printf("Digite uma opção válida. . .");
                     continue;
                 }
             } while (select2 < 0 && select2 > 1);
-            
+
             fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
             fwrite(&v, sizeof(Venda), 1, fp);
 
@@ -381,8 +397,7 @@ void AdicionarProduto()
         printf("[ 1 ] - Continuar\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -427,12 +442,23 @@ void AdicionarProduto()
             fwrite(&p, sizeof(Produto), 1, arquivo);
         }
         fclose(arquivo);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     } while (select != 0);
 }
 
 void ListarProdutos()
 {
+    if(!ExisteProduto())
+    {
+        system("clear");
+        printf("======== Lista de Produtos ========\n");
+        printf("\n\nNenhum produto cadastrado.\n");
+        printf("\n\nPressione Enter para continuar. ");
+        getchar();
+        return;
+    }
+
     FILE *arquivo;
     Produto p;
 
@@ -442,8 +468,10 @@ void ListarProdutos()
     else
     {
         system("clear");
-        printf("======== Lista de Produtos ========\n");
-        while (1)
+        printf("+=========================+\n");
+        printf("|     Lista de Produtos   |\n");
+        printf("+=========================+\n");
+        while(1)
         {
             fread(&p, sizeof(p), 1, arquivo); // 1 = Quantos structs setão lidos.
             if (feof(arquivo))
@@ -458,12 +486,25 @@ void ListarProdutos()
             }
         }
         fclose(arquivo);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     }
 }
 
 void RemoverProduto()
 {
+    if(!ExisteProduto())
+    {
+        system("clear");
+        printf("+=========================+\n");
+        printf("|     Remover Produto     |\n");
+        printf("+=========================+\n");
+        printf("\n\nNenhum produto cadastrado.\n");
+        printf("\n\nPressione Enter para continuar. ");
+        getchar();
+        return;
+    }
+
     FILE *fp;
     Produto p;
 
@@ -534,6 +575,7 @@ void RemoverProduto()
         {
             printf("\n\nCódigo %s não encontrado. . .", codPesquisado);
         }
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     } while (select != 0);
 }
@@ -541,6 +583,14 @@ void RemoverProduto()
 void MenuVenda()
 {
     int select;
+
+    if (!ExisteProduto())
+    {
+        printf("\n========\n\nNenhum produto cadastrado.\n\nCadastre um produto para poder acessar o menu de vendas.");
+        printf("\n\nPressione Enter para continuar. . .");
+        getchar();
+        return;
+    }
 
     do
     {
@@ -555,8 +605,7 @@ void MenuVenda()
         printf("[ 3 ] - Remover Vendas\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -597,8 +646,7 @@ void MenuProduto()
         printf("[ 3 ] - Remover Produtos\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -638,8 +686,7 @@ int main()
         printf("[ 2 ] - Acessar Menu Produtos\n");
 
         printf("\nResposta: ");
-        scanf("%d", &select);
-        getchar();
+        scanf("%d%*c", &select);
 
         switch (select)
         {
@@ -659,7 +706,5 @@ int main()
             break;
         }
     } while (select != 0);
-
-    getchar();
     return 0;
 }
