@@ -23,80 +23,80 @@ typedef struct
 
 int VerificarAtvVnd()
 {
-    FILE *fp;
+    FILE *arqVendas;
     Venda v;
 
     int posProcura = 0;
 
-    fp = fopen("vendas", "rb");
+    arqVendas = fopen("vendas", "rb");
 
     while(1)
     {
-        fread(&v, sizeof(Venda), 1, fp);
-        if (feof(fp))
+        fread(&v, sizeof(Venda), 1, arqVendas);
+        if (feof(arqVendas))
             break;
         if (v.vendaAtiva == 0)
         {
             // printf("\n\nEncontrei uma venda inativa na posição %d.", posProcura);
-            fclose(fp);
+            fclose(arqVendas);
             return posProcura;
         }
         posProcura++;
     }
     // printf("\n\nNão achei venda inativa.");
-    fclose(fp);
+    fclose(arqVendas);
     return -1;
 }
 
 int ProcurarVenda(int codigoVenda)
 {
-    FILE *fp;
+    FILE *arqVendas;
     Venda v;
 
     int posPesquisa = 0;
 
-    fp = fopen("vendas", "rb");
+    arqVendas = fopen("vendas", "rb");
 
     while(1)
     {
-        fread(&v, sizeof(Venda), 1, fp);
-        if(feof(fp))
+        fread(&v, sizeof(Venda), 1, arqVendas);
+        if(feof(arqVendas))
             break;
         if(v.codigoVenda == codigoVenda)
         {
-            fclose(fp);
+            fclose(arqVendas);
             return posPesquisa;
         }
         posPesquisa++;
     }
-    fclose(fp);
+    fclose(arqVendas);
     return -1;
 }
 
 int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 {
-    FILE *procura;
+    FILE *arqProdutos;
     Produto p;
 
     int posicaoEncontrada = 0;
 
-    procura = fopen("produtos", "rb");
+    arqProdutos = fopen("produtos", "rb");
 
     while(1)
     {
-        fread(&p, sizeof(Produto), 1, procura);
-        if (feof(procura))
+        fread(&p, sizeof(Produto), 1, arqProdutos);
+        if (feof(arqProdutos))
             break;
         if (p.produtoAtivo == 0)
         {
             // printf("\n\nEncontrei um meliante desativado na posição: %d.", posicaoEncontrada);
-            fclose(procura);
+            fclose(arqProdutos);
             return posicaoEncontrada;
         }
         posicaoEncontrada++;
     }
     // printf("\n\nNenhum meliante encontrado.");
-    fclose(procura);
+    fclose(arqProdutos);
     return -1;
 }
 
@@ -149,7 +149,7 @@ int ExisteProduto()
 
 void AdicionarVenda()
 {
-    FILE *arquivo, *codigo;
+    FILE *arqVendas, *arqCodigoVnd;
     Venda v;
 
     int select, size, codigoVenda = 1;
@@ -180,27 +180,27 @@ void AdicionarVenda()
             continue;
         }
 
-        codigo = fopen("codigo", "a+b");
+        arqCodigoVnd = fopen("codigo", "a+b");
 
-        if (codigo != NULL)
+        if (arqCodigoVnd != NULL)
         {
-            fseek(codigo, 0, SEEK_END);
-            size = ftell(codigo);
+            fseek(arqCodigoVnd, 0, SEEK_END);
+            size = ftell(arqCodigoVnd);
 
             if (size == 0)
             {
                 printf("Arquivo Criado\n");
-                fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
+                fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
             }
         }
 
-        rewind(codigo);
-        fread(&codigoVenda, sizeof(codigoVenda), 1, codigo);
+        rewind(arqCodigoVnd);
+        fread(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
 
-        fclose(codigo);
+        fclose(arqCodigoVnd);
 
-        arquivo = fopen("vendas", "a+b");
-        fclose(arquivo);
+        arqVendas = fopen("vendas", "a+b");
+        fclose(arqVendas);
 
         system("clear");
 
@@ -212,25 +212,25 @@ void AdicionarVenda()
         scanf("%d%*c", &v.quantidadeVendida);
         v.vendaAtiva = 1;
 
-        arquivo = fopen("vendas", "r+b");
+        arqVendas = fopen("vendas", "r+b");
 
         if(VerificarAtvVnd() < 0)
         {
-            fseek(arquivo, 0, SEEK_END);
-            fwrite(&v, sizeof(Venda), 1, arquivo);
+            fseek(arqVendas, 0, SEEK_END);
+            fwrite(&v, sizeof(Venda), 1, arqVendas);
         }
         else
         {
-            fseek(arquivo, VerificarAtvPrd() * sizeof(Venda), SEEK_SET);
-            fwrite(&v, sizeof(Venda), 1, arquivo);
+            fseek(arqVendas, VerificarAtvPrd() * sizeof(Venda), SEEK_SET);
+            fwrite(&v, sizeof(Venda), 1, arqVendas);
         }
-        fclose(arquivo);
+        fclose(arqVendas);
 
         codigoVenda++;
 
         fopen("codigo", "w");
-        fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
-        fclose(codigo);
+        fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
+        fclose(arqCodigoVnd);
 
         printf("\n\nPressione Enter para continuar. ");
         getchar();
@@ -240,14 +240,14 @@ void AdicionarVenda()
 
 void ListarVendas()
 {
-    FILE *arquivo, *produto;
+    FILE *arqVendas, *arqProdutos;
     Venda v;
     Produto p;
 
-    arquivo = fopen("vendas", "a+b");
-    produto = fopen("produtos", "rb");
+    arqVendas = fopen("vendas", "a+b");
+    arqProdutos = fopen("produtos", "rb");
 
-    if (arquivo == NULL)
+    if (arqVendas == NULL)
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
@@ -255,13 +255,13 @@ void ListarVendas()
         printf("======== Lista de Vendas ========\n");
         while(1)
         {
-            fread(&v, sizeof(v), 1, arquivo); // 1 = Quantos structs setão lidos.
-            if (feof(arquivo))
+            fread(&v, sizeof(v), 1, arqVendas); // 1 = Quantos structs setão lidos.
+            if (feof(arqVendas))
                 break;
             if (v.vendaAtiva != 0)
             {
-                fseek(produto, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
-                fread(&p, sizeof(Produto), 1, produto);
+                fseek(arqProdutos, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
+                fread(&p, sizeof(Produto), 1, arqProdutos);
 
                 printf("\nCódigo da Venda: %d.", v.codigoVenda);
                 printf("\nProduto Vendido: %s.", p.nome);
@@ -271,8 +271,8 @@ void ListarVendas()
                 printf("\n\n========\n");
             }
         }
-        fclose(arquivo);
-        fclose(produto);
+        fclose(arqVendas);
+        fclose(arqProdutos);
 
         printf("\n\nPressione Enter para continuar. ");
         getchar();
@@ -281,7 +281,7 @@ void ListarVendas()
 
 void RemoverVenda()
 {
-    FILE *fp, *produto;
+    FILE *arqVendas, *arqProdutos;
     Venda v;
     Produto p;
 
@@ -325,14 +325,14 @@ void RemoverVenda()
         }
         else
         {
-            fp = fopen("vendas", "r+b");
-            produto = fopen("produtos", "rb");
+            arqVendas = fopen("vendas", "r+b");
+            arqProdutos = fopen("produtos", "rb");
 
-            fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
-            fread(&v, sizeof(Venda), 1, fp);
+            fseek(arqVendas, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
+            fread(&v, sizeof(Venda), 1, arqVendas);
 
-            fseek(produto, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
-            fread(&p, sizeof(Produto), 1, produto);
+            fseek(arqProdutos, ProcurarProduto(v.codigoPrdVendido) * sizeof(Produto), SEEK_SET);
+            fread(&p, sizeof(Produto), 1, arqProdutos);
 
             do
             {
@@ -370,18 +370,18 @@ void RemoverVenda()
                 }
             } while (select2 < 0 && select2 > 1);
 
-            fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
-            fwrite(&v, sizeof(Venda), 1, fp);
+            fseek(arqVendas, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
+            fwrite(&v, sizeof(Venda), 1, arqVendas);
 
-            fclose(fp);
-            fclose(produto);
+            fclose(arqVendas);
+            fclose(arqProdutos);
         }
     } while (select != 0);
 }
 
 void AdicionarProduto()
 {
-    FILE *arquivo;
+    FILE *arqProdutos;
     Produto p;
 
     int select;
@@ -412,8 +412,8 @@ void AdicionarProduto()
             continue;
         }
 
-        arquivo = fopen("produtos", "a+b");
-        fclose(arquivo);
+        arqProdutos = fopen("produtos", "a+b");
+        fclose(arqProdutos);
 
         system("clear");
         printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
@@ -429,21 +429,19 @@ void AdicionarProduto()
         scanf("%f%*c", &p.valorVenda);
         p.produtoAtivo = 1;
 
-        arquivo = fopen("produtos", "r+b");
+        arqProdutos = fopen("produtos", "r+b");
 
         if (VerificarAtvPrd() < 0)
         {
-            fseek(arquivo, 0, SEEK_END);
-            fwrite(&p, sizeof(Produto), 1, arquivo);
+            fseek(arqProdutos, 0, SEEK_END);
+            fwrite(&p, sizeof(Produto), 1, arqProdutos);
         }
         else
         {
-            fseek(arquivo, VerificarAtvPrd() * sizeof(Produto), SEEK_SET);
-            fwrite(&p, sizeof(Produto), 1, arquivo);
+            fseek(arqProdutos, VerificarAtvPrd() * sizeof(Produto), SEEK_SET);
+            fwrite(&p, sizeof(Produto), 1, arqProdutos);
         }
-        fclose(arquivo);
-        printf("\n\nPressione Enter para continuar. ");
-        getchar();
+        fclose(arqProdutos);
     } while (select != 0);
 }
 
@@ -459,11 +457,11 @@ void ListarProdutos()
         return;
     }
 
-    FILE *arquivo;
+    FILE *arqProdutos;
     Produto p;
 
-    arquivo = fopen("produtos", "a+b");
-    if (arquivo == NULL)
+    arqProdutos = fopen("produtos", "a+b");
+    if (arqProdutos == NULL)
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
@@ -473,8 +471,8 @@ void ListarProdutos()
         printf("+=========================+\n");
         while(1)
         {
-            fread(&p, sizeof(p), 1, arquivo); // 1 = Quantos structs setão lidos.
-            if (feof(arquivo))
+            fread(&p, sizeof(p), 1, arqProdutos); // 1 = Quantos structs setão lidos.
+            if (feof(arqProdutos))
                 break;
             if (p.produtoAtivo != 0)
             {
@@ -485,7 +483,7 @@ void ListarProdutos()
                 printf("\n========\n");
             }
         }
-        fclose(arquivo);
+        fclose(arqProdutos);
         printf("\n\nPressione Enter para continuar. ");
         getchar();
     }
@@ -505,7 +503,7 @@ void RemoverProduto()
         return;
     }
 
-    FILE *fp;
+    FILE *arqProdutos;
     Produto p;
 
     int select;
@@ -549,11 +547,11 @@ void RemoverProduto()
 
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
 
-            fp = fopen("produtos", "r+b");
+            arqProdutos = fopen("produtos", "r+b");
 
-            fseek(fp, posicaoCodigo * sizeof(Produto), SEEK_SET);
+            fseek(arqProdutos, posicaoCodigo * sizeof(Produto), SEEK_SET);
 
-            fread(&p, sizeof(Produto), 1, fp);
+            fread(&p, sizeof(Produto), 1, arqProdutos);
 
             printf("\n\nNome do produto: %s.", p.nome);
 
@@ -563,13 +561,14 @@ void RemoverProduto()
             else
                 printf("Desativado.");
 
-            printf("\n\nDigite o estado atual do produto: ");
+            printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Produto\n[ 1 ] - Ativar Produto");
+            printf("\nResposta: ");
             scanf("%d%*c", &p.produtoAtivo);
 
-            fseek(fp, posicaoCodigo * sizeof(Produto), SEEK_SET);
-            fwrite(&p, sizeof(Produto), 1, fp);
+            fseek(arqProdutos, posicaoCodigo * sizeof(Produto), SEEK_SET);
+            fwrite(&p, sizeof(Produto), 1, arqProdutos);
 
-            fclose(fp);
+            fclose(arqProdutos);
         }
         else
         {
