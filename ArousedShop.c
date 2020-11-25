@@ -14,12 +14,43 @@ typedef struct
 
 typedef struct
 {
-    int codigoPrdVendido;
     int quantidadeVendida;
     int codigoVenda;
     float lucro;
+    int codigoPrdVendido;
     int vendaAtiva;
 } Venda;
+
+void ExcluirVendasAtreladas(int codigoPrd)
+{
+    FILE *arqVendas;
+    Venda v;
+
+    int leitor = 0;
+
+    arqVendas = fopen("vendas", "r+b");
+
+    while(1)
+    {
+        printf("\n\nPosição do ponteiro no arquivo: %d", ftell(arqVendas));
+        fread(&v, sizeof(Venda), 1, arqVendas);
+        if(feof(arqVendas));
+        {
+            printf("\n\nEntrei no BREAK no leitor %d.", leitor);
+            break;
+        }
+        if(v.codigoPrdVendido == codigoPrd)
+        {
+            printf("\nApaguei a venda: %d.", v.codigoVenda);
+            v.vendaAtiva = 0;
+            fseek(arqVendas, leitor * sizeof(Venda), SEEK_SET);
+            fwrite(&v, sizeof(Venda), 1, arqVendas);
+        }
+        leitor++;
+    }
+    fclose(arqVendas);
+    getchar();
+}
 
 int VerificarAtvVnd() // Retorna a posicao do primeira venda desativada. Se n tiver, retorna -1.
 {
@@ -59,7 +90,7 @@ int ProcurarVenda(int codigoVenda) // Retorna a posicao da venda a partir do có
 
     while(1)
     {
-        fread(&v, sizeof(Venda), 1, arqVendas);
+        fread(&v, sizeof(v), 1, arqVendas);
         if(feof(arqVendas))
             break;
         if(v.codigoVenda == codigoVenda)
@@ -105,7 +136,7 @@ int ProcurarProduto(int codigoProduto) // Retorna a posicao do produto a partir 
     FILE *arqProduto;
     Produto p;
 
-    int eof, posicaoEncontrado = 0;
+    int posicaoEncontrado = 0;
 
     arqProduto = fopen("produtos", "rb");
 
@@ -250,6 +281,7 @@ void ListarVendas()
                 fread(&p, sizeof(Produto), 1, arqProdutos);
 
                 printf("\nCódigo da Venda: %d.", v.codigoVenda);
+                printf("\nStatus da Venda: %d.", v.vendaAtiva);
                 printf("\nProduto Vendido: %s.", p.nome);
                 printf("\nCódigo do Produto Inserido: %d.", v.codigoPrdVendido);
                 printf("\nQuantidade Vendida: %d\n", v.quantidadeVendida);
@@ -326,7 +358,7 @@ void RemoverVenda()
                 printf("======== Removendo Venda ========");
                 printf("\n\nA venda selecionada está na posição: %d.", ProcurarVenda(codigoVenda));
                 printf("\nO produto vendido é: %s.", p.nome);
-                printf("\nO código do produto é: %s.", v.codigoPrdVendido);
+                printf("\nO código do produto é: %d.", v.codigoPrdVendido);
                 printf("\nA quantidade vendida é: %d.", v.quantidadeVendida);
                 printf("\nO valor de compra é: R$%.2f.", p.valorCompra);
                 printf("\nO valor de venda é: R$%.2f.", p.valorVenda);
@@ -538,17 +570,13 @@ void RemoverProduto()
         if (posicaoCodigo >= 0)
         {
             system("clear");
-
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
 
             arqProdutos = fopen("produtos", "r+b");
-
             fseek(arqProdutos, posicaoCodigo * sizeof(Produto), SEEK_SET);
-
             fread(&p, sizeof(Produto), 1, arqProdutos);
 
             printf("\n\nNome do produto: %s.", p.nome);
-
             printf("\n\nEstado do produto: ");
             if (p.produtoAtivo == 1)
                 printf("Ativado.");
@@ -558,6 +586,11 @@ void RemoverProduto()
             printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Produto\n[ 1 ] - Ativar Produto");
             printf("\nResposta: ");
             scanf("%d%*c", &p.produtoAtivo);
+
+            if(p.produtoAtivo == 0)
+            {
+                ExcluirVendasAtreladas(p.codigoProduto);
+            }
 
             fseek(arqProdutos, posicaoCodigo * sizeof(Produto), SEEK_SET);
             fwrite(&p, sizeof(Produto), 1, arqProdutos);
