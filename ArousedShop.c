@@ -6,7 +6,7 @@
 typedef struct
 {
     char nome[50];
-    char codigoProduto[6];
+    int codigoProduto;
     float valorVenda;
     float valorCompra;
     int produtoAtivo;
@@ -14,7 +14,7 @@ typedef struct
 
 typedef struct
 {
-    char codigoPrdVendido[6];
+    int codigoPrdVendido;
     int quantidadeVendida;
     int codigoVenda;
     float lucro;
@@ -100,7 +100,7 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
     return -1;
 }
 
-int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a partir de seu código.
+int ProcurarProduto(int codigoProduto) // Retorna a posicao do produto a partir de seu código.
 {
     FILE *arqProduto;
     Produto p;
@@ -120,7 +120,7 @@ int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a par
             fread(&p, sizeof(p), 1, arqProduto);
             if (feof(arqProduto))
                 break;
-            if (strcmp(codigoProduto, p.codigoProduto) == 0)
+            if (codigoProduto == p.codigoProduto)
             {
                 // printf("\n\nENCONTROU O MALDITO");
                 fclose(arqProduto);
@@ -175,12 +175,12 @@ void AdicionarVenda()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             continue;
         }
 
-        arqCodigoVnd = fopen("codigo", "a+b");
+        arqCodigoVnd = fopen("codigoVnd", "a+b");
 
         if (arqCodigoVnd != NULL)
         {
@@ -204,9 +204,8 @@ void AdicionarVenda()
 
         system("clear");
 
-        printf("\n\nDigite o código do produto vendido [6 Dígitos]: ");
-        gets(v.codigoPrdVendido);
-        v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0';
+        printf("\n\nDigite o código do produto vendido: ");
+        scanf("%d%*c", &v.codigoPrdVendido);
         v.codigoVenda = codigoVenda;
         printf("\n\nDigite a quantidade vendida: ");
         scanf("%d%*c", &v.quantidadeVendida);
@@ -228,12 +227,9 @@ void AdicionarVenda()
 
         codigoVenda++;
 
-        fopen("codigo", "w");
+        fopen("codigoVnd", "w");
         fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
         fclose(arqCodigoVnd);
-
-        printf("\n\nPressione Enter para continuar. ");
-        getchar();
         return 0;
     } while (select != 0);
 }
@@ -265,7 +261,7 @@ void ListarVendas()
 
                 printf("\nCódigo da Venda: %d.", v.codigoVenda);
                 printf("\nProduto Vendido: %s.", p.nome);
-                printf("\nCódigo do Produto Inserido: %s.", v.codigoPrdVendido);
+                printf("\nCódigo do Produto Inserido: %d.", v.codigoPrdVendido);
                 printf("\nQuantidade Vendida: %d\n", v.quantidadeVendida);
                 printf("\nLucro: R$%.2f.", (p.valorVenda - p.valorCompra) * v.quantidadeVendida);
                 printf("\n\n========\n");
@@ -274,7 +270,7 @@ void ListarVendas()
         fclose(arqVendas);
         fclose(arqProdutos);
 
-        printf("\n\nPressione Enter para continuar. ");
+        printf("\n\nPressione Enter para continuar. . .");
         getchar();
     }
 }
@@ -307,7 +303,7 @@ void RemoverVenda()
         case 1:
             break;
         default:
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             continue;
         }
@@ -365,7 +361,7 @@ void RemoverVenda()
                     break;
 
                 default:
-                    printf("Digite uma opção válida. . .");
+                    printf("\nDigite uma opção válida. . .");
                     continue;
                 }
             } while (select2 < 0 && select2 > 1);
@@ -381,10 +377,10 @@ void RemoverVenda()
 
 void AdicionarProduto()
 {
-    FILE *arqProdutos;
+    FILE *arqProdutos, *arqCodigoPrd;
     Produto p;
 
-    int select;
+    int select, codigoDoPrd = 1;
 
     do
     {
@@ -407,7 +403,7 @@ void AdicionarProduto()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             continue;
         }
@@ -415,11 +411,17 @@ void AdicionarProduto()
         arqProdutos = fopen("produtos", "a+b");
         fclose(arqProdutos);
 
+        arqCodigoPrd = fopen("codigoPrd", "r+b");
+        if(arqCodigoPrd == NULL)
+        {
+            arqCodigoPrd = fopen("codigoPrd", "wb");
+            fwrite(&codigoDoPrd, sizeof(codigoDoPrd), 1, arqCodigoPrd);
+            rewind(arqCodigoPrd);
+        }
+        fread(&codigoDoPrd, sizeof(codigoDoPrd), 1, arqCodigoPrd);
+
         system("clear");
-        printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
-        printf("\n\nDigite o código do produto [6 Dígitos]: ");
-        gets(p.codigoProduto);
-        p.codigoProduto[strcspn(p.codigoProduto, "\n")] = '\0'; // Encontra a posicao onde está o \n no final da string e troca por \0.
+        printf("======== Adicionando Novo Produto ========");
         printf("\n\nDigite o nome do produto: ");
         gets(p.nome);
         p.nome[strcspn(p.nome, "\n")] = '\0';
@@ -428,6 +430,11 @@ void AdicionarProduto()
         printf("\n\nDigite o valor de venda: ");
         scanf("%f%*c", &p.valorVenda);
         p.produtoAtivo = 1;
+        p.codigoProduto = codigoDoPrd;
+
+        codigoDoPrd++;
+        rewind(arqCodigoPrd);
+        fwrite(&codigoDoPrd, sizeof(codigoDoPrd), 1, arqCodigoPrd);
 
         arqProdutos = fopen("produtos", "r+b");
 
@@ -442,6 +449,7 @@ void AdicionarProduto()
             fwrite(&p, sizeof(Produto), 1, arqProdutos);
         }
         fclose(arqProdutos);
+        fclose(arqCodigoPrd);
     } while (select != 0);
 }
 
@@ -449,10 +457,9 @@ void ListarProdutos()
 {
     if(!ExisteProduto())
     {
-        system("clear");
-        printf("======== Lista de Produtos ========\n");
-        printf("\n\nNenhum produto cadastrado.\n");
-        printf("\n\nPressione Enter para continuar. ");
+        printf("========\n\nNenhum produto cadastrado.");
+        printf("\n\nAdicione um produto para acessar essa opção.");
+        printf("\n\nPressione Enter para continuar. . . ");
         getchar();
         return;
     }
@@ -476,15 +483,15 @@ void ListarProdutos()
                 break;
             if (p.produtoAtivo != 0)
             {
-                printf("\nNome do Produto: %s", p.nome);
-                printf("\nCódigo do Produto: %s", p.codigoProduto);
-                printf("\nValor Compra: R$%.2f", p.valorCompra);
-                printf("\nValor Venda: R$%.2f\n", p.valorVenda);
+                printf("\nNome do Produto: %s.", p.nome);
+                printf("\nCódigo do Produto: %d.", p.codigoProduto);
+                printf("\nValor Compra: R$%.2f.", p.valorCompra);
+                printf("\nValor Venda: R$%.2f.\n", p.valorVenda);
                 printf("\n========\n");
             }
         }
         fclose(arqProdutos);
-        printf("\n\nPressione Enter para continuar. ");
+        printf("\n\nPressione Enter para continuar. . .");
         getchar();
     }
 }
@@ -493,12 +500,9 @@ void RemoverProduto()
 {
     if(!ExisteProduto())
     {
-        system("clear");
-        printf("+=========================+\n");
-        printf("|     Remover Produto     |\n");
-        printf("+=========================+\n");
-        printf("\n\nNenhum produto cadastrado.\n");
-        printf("\n\nPressione Enter para continuar. ");
+        printf("========\n\nNenhum produto cadastrado.");
+        printf("\n\nAdicione um produto para acessar essa opção.");
+        printf("\n\nPressione Enter para continuar. . .");
         getchar();
         return;
     }
@@ -507,7 +511,7 @@ void RemoverProduto()
     Produto p;
 
     int select;
-    char codPesquisado[6];
+    int codPesquisado;
     int posicaoCodigo;
 
     do
@@ -531,13 +535,13 @@ void RemoverProduto()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             continue;
         }
 
         printf("\nDigite o código do produto que deseja remover: ");
-        gets(codPesquisado);
+        scanf("%d%*c", &codPesquisado);
 
         posicaoCodigo = ProcurarProduto(codPesquisado);
 
@@ -572,9 +576,9 @@ void RemoverProduto()
         }
         else
         {
-            printf("\n\nCódigo %s não encontrado. . .", codPesquisado);
+            printf("\n\nCódigo %d não encontrado.", codPesquisado);
         }
-        printf("\n\nPressione Enter para continuar. ");
+        printf("\n\nPressione Enter para continuar. . .");
         getchar();
     } while (select != 0);
 }
@@ -621,7 +625,7 @@ void MenuVenda()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             break;
         }
@@ -662,7 +666,7 @@ void MenuProduto()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             break;
         }
@@ -700,7 +704,7 @@ int main()
             break;
         default:
             select = -1;
-            printf("Digite uma opção válida. . .");
+            printf("\nDigite uma opção válida. . .");
             getchar();
             break;
         }
