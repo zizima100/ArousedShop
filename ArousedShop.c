@@ -180,34 +180,24 @@ void AdicionarVenda()
             continue;
         }
 
-        arqCodigoVnd = fopen("codigoVnd", "a+b");
-
-        if (arqCodigoVnd != NULL)
+        arqCodigoVnd = fopen("codigoVnd", "r+b");
+        if (arqCodigoVnd == NULL)
         {
-            fseek(arqCodigoVnd, 0, SEEK_END);
-            size = ftell(arqCodigoVnd);
-
-            if (size == 0)
-            {
-                printf("Arquivo Criado\n");
-                fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
-            }
+            arqCodigoVnd = fopen("codigoVnd", "wb");
+            fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
+            rewind(arqCodigoVnd);
         }
-
-        rewind(arqCodigoVnd);
         fread(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
-
-        fclose(arqCodigoVnd);
 
         arqVendas = fopen("vendas", "a+b");
         fclose(arqVendas);
 
         system("clear");
-
+        printf("======== Adicionando Um Novo Produto ========");
         printf("\n\nDigite o código do produto vendido: ");
         scanf("%d%*c", &v.codigoPrdVendido);
         v.codigoVenda = codigoVenda;
-        printf("\n\nDigite a quantidade vendida: ");
+        printf("\nDigite a quantidade vendida: ");
         scanf("%d%*c", &v.quantidadeVendida);
         v.vendaAtiva = 1;
 
@@ -223,13 +213,13 @@ void AdicionarVenda()
             fseek(arqVendas, VerificarAtvPrd() * sizeof(Venda), SEEK_SET);
             fwrite(&v, sizeof(Venda), 1, arqVendas);
         }
-        fclose(arqVendas);
 
         codigoVenda++;
-
-        fopen("codigoVnd", "w");
+        rewind(arqCodigoVnd);
         fwrite(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
+
         fclose(arqCodigoVnd);
+        fclose(arqVendas);
         return 0;
     } while (select != 0);
 }
