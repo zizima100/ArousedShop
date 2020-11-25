@@ -30,7 +30,7 @@ int VerificarAtvVnd()
 
     fp = fopen("vendas", "rb");
 
-    while (1)
+    for(;;)
     {
         fread(&v, sizeof(Venda), 1, fp);
         if (feof(fp))
@@ -57,7 +57,7 @@ int ProcurarVenda(int codigoVenda)
 
     fp = fopen("vendas", "rb");
 
-    while(1)
+    for(;;)
     {
         fread(&v, sizeof(Venda), 1, fp);
         if(feof(fp))
@@ -82,7 +82,7 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
     procura = fopen("produtos", "rb");
 
-    while (1)
+    for(;;)
     {
         fread(&p, sizeof(Produto), 1, procura);
         if (feof(procura))
@@ -102,35 +102,53 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
 int ProcurarProduto(char codigoProduto[6]) // Retorna a posicao do produto a partir de seu código.
 {
-    FILE *procura;
+    FILE *arqProduto;
     Produto p;
 
     int eof, posicaoEncontrado = 0;
 
-    procura = fopen("produtos", "rb");
+    arqProduto = fopen("produtos", "rb");
 
-    if (procura == NULL)
+    if (arqProduto == NULL)
     {
         return -1;
     }
     else
     {
-        while (1)
+        for(;;)
         {
-            fread(&p, sizeof(p), 1, procura);
-            if (feof(procura))
+            fread(&p, sizeof(p), 1, arqProduto);
+            if (feof(arqProduto))
                 break;
             if (strcmp(codigoProduto, p.codigoProduto) == 0)
             {
                 // printf("\n\nENCONTROU O MALDITO");
-                fclose(procura);
+                fclose(arqProduto);
                 return posicaoEncontrado;
             }
             posicaoEncontrado++;
         }
-        fclose(procura);
+        fclose(arqProduto);
         return -1;
     }
+}
+
+int ExisteProduto()
+{
+    FILE *arqProduto;
+    Produto p;
+
+    int eof, posicaoEncontrado = 0;
+
+    arqProduto = fopen("produtos", "rb");
+
+    if (arqProduto == NULL)
+    {
+        fclose(arqProduto);
+        return 0;
+    }
+    fclose(arqProduto);
+    return 1;
 }
 
 void AdicionarVenda()
@@ -138,11 +156,11 @@ void AdicionarVenda()
     FILE *arquivo, *codigo;
     Venda v;
 
-    int select, size, n = 1;
+    int select, size, codigoVenda = 1;
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+=========================+\n");
         printf("|     Adicionar Venda     |\n");
         printf("+=========================+\n");
@@ -152,6 +170,7 @@ void AdicionarVenda()
 
         printf("\nResposta: ");
         scanf("%d", &select);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
 
         switch (select)
@@ -169,32 +188,32 @@ void AdicionarVenda()
 
         codigo = fopen("codigo", "a+b");
 
-        if (NULL != codigo)
+        if (codigo != NULL)
         {
             fseek(codigo, 0, SEEK_END);
             size = ftell(codigo);
 
-            if (0 == size)
+            if (size == 0)
             {
                 printf("Arquivo Criado\n");
-                fwrite(&n, sizeof(n), 1, codigo);
+                fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
             }
         }
 
         rewind(codigo);
-        fread(&n, sizeof(n), 1, codigo);
+        fread(&codigoVenda, sizeof(codigoVenda), 1, codigo);
 
         fclose(codigo);
 
         arquivo = fopen("vendas", "a+b");
         fclose(arquivo);
 
-        system("clear");
+        system("cls");
 
         printf("\n\nDigite o código do produto vendido [6 Dígitos]: ");
         gets(v.codigoPrdVendido);
         v.codigoPrdVendido[strcspn(v.codigoPrdVendido, "\n")] = '\0';
-        v.codigoVenda = n;
+        v.codigoVenda = codigoVenda;
         printf("\n\nDigite a quantidade vendida: ");
         scanf("%d%*c", &v.quantidadeVendida);
         v.vendaAtiva = 1;
@@ -213,12 +232,13 @@ void AdicionarVenda()
         }
         fclose(arquivo);
 
-        n++;
+        codigoVenda++;
 
         fopen("codigo", "w");
-        fwrite(&n, sizeof(n), 1, codigo);
+        fwrite(&codigoVenda, sizeof(codigoVenda), 1, codigo);
         fclose(codigo);
 
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
         return 0;
     } while (select != 0);
@@ -237,9 +257,9 @@ void ListarVendas()
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
-        system("clear");
+        system("cls");
         printf("======== Lista de Vendas ========\n");
-        while (1)
+        for(;;)
         {
             fread(&v, sizeof(v), 1, arquivo); // 1 = Quantos structs setão lidos.
             if (feof(arquivo))
@@ -259,6 +279,8 @@ void ListarVendas()
         }
         fclose(arquivo);
         fclose(produto);
+
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     }
 }
@@ -273,7 +295,7 @@ void RemoverVenda()
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+=======================+\n");
         printf("|     Remover Venda     |\n");
         printf("+=======================+\n");
@@ -301,7 +323,7 @@ void RemoverVenda()
 
         if(ProcurarVenda(codigoVenda) < 0)
         {
-            system("clear");
+            system("cls");
             printf("Código não encontrado.\n\nVerifique o código da venda na lista de vendas.");
             printf("\n\nPressione enter para continuar. . .");
             getchar();
@@ -320,7 +342,7 @@ void RemoverVenda()
 
             do
             {
-                system("clear");
+                system("cls");
                 printf("======== Removendo Venda ========");
                 printf("\n\nA venda selecionada está na posição: %d.", ProcurarVenda(codigoVenda));
                 printf("\nO produto vendido é: %s.", p.nome);
@@ -335,7 +357,7 @@ void RemoverVenda()
                 else
                     printf("\n\nA venda está: INATIVA");
 
-                printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Venda\n[ 1 ] = Ativar Venda");
+                printf("\n\n========\nO que você quer fazer?\n[ 0 ] - Desativar Venda\n[ 1 ] - Ativar Venda");
                 printf("\nResposta: ");
                 scanf("%d%*c", &select2);
 
@@ -347,13 +369,13 @@ void RemoverVenda()
                 case 1:
                     v.vendaAtiva = 1;
                     break;
-                
+
                 default:
                     printf("Digite uma opção válida. . .");
                     continue;
                 }
             } while (select2 < 0 && select2 > 1);
-            
+
             fseek(fp, ProcurarVenda(codigoVenda) * sizeof(Venda), SEEK_SET);
             fwrite(&v, sizeof(Venda), 1, fp);
 
@@ -372,7 +394,7 @@ void AdicionarProduto()
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+===========================+\n");
         printf("|     Adicionar Produto     |\n");
         printf("+===========================+\n");
@@ -382,6 +404,7 @@ void AdicionarProduto()
 
         printf("\nResposta: ");
         scanf("%d", &select);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
 
         switch (select)
@@ -400,7 +423,7 @@ void AdicionarProduto()
         arquivo = fopen("produtos", "a+b");
         fclose(arquivo);
 
-        system("clear");
+        system("cls");
         printf("DEBUG - ARQUIVO PRODUTOS ABERTO");
         printf("\n\nDigite o código do produto [6 Dígitos]: ");
         gets(p.codigoProduto);
@@ -427,12 +450,23 @@ void AdicionarProduto()
             fwrite(&p, sizeof(Produto), 1, arquivo);
         }
         fclose(arquivo);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     } while (select != 0);
 }
 
 void ListarProdutos()
 {
+    if(!ExisteProduto())
+    {
+        system("cls");
+        printf("======== Lista de Produtos ========\n");
+        printf("\n\nNenhum produto cadastrado.\n");
+        printf("\n\nPressione Enter para continuar. ");
+        getchar();
+        return;
+    }
+
     FILE *arquivo;
     Produto p;
 
@@ -441,9 +475,11 @@ void ListarProdutos()
         printf("ERRO NA ABERTURA DO ARQUIVO");
     else
     {
-        system("clear");
-        printf("======== Lista de Produtos ========\n");
-        while (1)
+        system("cls");
+        printf("+=========================+\n");
+        printf("|     Lista de Produtos   |\n");
+        printf("+=========================+\n");
+        for(;;)
         {
             fread(&p, sizeof(p), 1, arquivo); // 1 = Quantos structs setão lidos.
             if (feof(arquivo))
@@ -458,12 +494,25 @@ void ListarProdutos()
             }
         }
         fclose(arquivo);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     }
 }
 
 void RemoverProduto()
 {
+    if(!ExisteProduto())
+    {
+        system("cls");
+        printf("+=========================+\n");
+        printf("|     Remover Produto     |\n");
+        printf("+=========================+\n");
+        printf("\n\nNenhum produto cadastrado.\n");
+        printf("\n\nPressione Enter para continuar. ");
+        getchar();
+        return;
+    }
+
     FILE *fp;
     Produto p;
 
@@ -473,7 +522,7 @@ void RemoverProduto()
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+=========================+\n");
         printf("|     Remover Produto     |\n");
         printf("+=========================+\n");
@@ -504,7 +553,7 @@ void RemoverProduto()
 
         if (posicaoCodigo >= 0)
         {
-            system("clear");
+            system("cls");
 
             printf("\nO código existe e sua posição é: %d.", posicaoCodigo);
 
@@ -534,6 +583,7 @@ void RemoverProduto()
         {
             printf("\n\nCódigo %s não encontrado. . .", codPesquisado);
         }
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
     } while (select != 0);
 }
@@ -542,9 +592,21 @@ void MenuVenda()
 {
     int select;
 
+    if (!ExisteProduto())
+    {
+        system("cls");
+        printf("+=========================+\n");
+        printf("|     Adicionar Venda     |\n");
+        printf("+=========================+\n");
+        printf("\n\nNenhum produto cadastrado.\n");
+        printf("\n\nPressione Enter para continuar. ");
+        getchar();
+        return;
+    }
+
     do
     {
-        system("clear");
+        system("cls");
         printf("+====================+\n");
         printf("|     Menu Venda     |\n");
         printf("+====================+\n");
@@ -556,6 +618,7 @@ void MenuVenda()
 
         printf("\nResposta: ");
         scanf("%d", &select);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
 
         switch (select)
@@ -586,7 +649,7 @@ void MenuProduto()
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+======================+\n");
         printf("|     Menu Produto     |\n");
         printf("+======================+\n");
@@ -598,6 +661,7 @@ void MenuProduto()
 
         printf("\nResposta: ");
         scanf("%d", &select);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
 
         switch (select)
@@ -628,7 +692,7 @@ int main()
 
     do
     {
-        system("clear");
+        system("cls");
         printf("+=======================================+\n");
         printf("|     Menu Principal - Aroused Shop     |\n");
         printf("+=======================================+\n");
@@ -639,6 +703,7 @@ int main()
 
         printf("\nResposta: ");
         scanf("%d", &select);
+        printf("\n\nPressione Enter para continuar. ");
         getchar();
 
         switch (select)
@@ -660,6 +725,7 @@ int main()
         }
     } while (select != 0);
 
+    printf("\n\nPressione Enter para continuar.");
     getchar();
     return 0;
 }
