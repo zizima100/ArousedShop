@@ -21,7 +21,7 @@ typedef struct
     int vendaAtiva;
 } Venda;
 
-int VerificarAtvVnd()
+int VerificarAtvVnd() // Retorna a posicao do primeira venda desativada. Se n tiver, retorna -1.
 {
     FILE *arqVendas;
     Venda v;
@@ -48,7 +48,7 @@ int VerificarAtvVnd()
     return -1;
 }
 
-int ProcurarVenda(int codigoVenda)
+int ProcurarVenda(int codigoVenda) // Retorna a posicao da venda a partir do código fornecido. Se n tiver, retorna -1.
 {
     FILE *arqVendas;
     Venda v;
@@ -133,7 +133,7 @@ int ProcurarProduto(int codigoProduto) // Retorna a posicao do produto a partir 
     }
 }
 
-int ExisteProduto()
+int ExisteProduto() // Retorna 0 se não existir um arquivo chamado produto.
 {
     FILE *arqProduto;
 
