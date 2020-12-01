@@ -21,7 +21,7 @@ typedef struct
     int vendaAtiva;
 } Venda;
 
-void ExcluirVendasAtreladas(int codigoPrd)
+void ExcluirVendasAtreladas(int codigoPrdDeletado)
 {
     FILE *arqVendas;
     Venda v;
@@ -30,18 +30,15 @@ void ExcluirVendasAtreladas(int codigoPrd)
 
     arqVendas = fopen("vendas", "r+b");
 
-    while(1)
+    while (1)
     {
-        printf("\n\nPosição do ponteiro no arquivo: %d", ftell(arqVendas));
         fread(&v, sizeof(Venda), 1, arqVendas);
-        if(feof(arqVendas));
+        if (feof(arqVendas))
         {
-            printf("\n\nEntrei no BREAK no leitor %d.", leitor);
             break;
         }
-        if(v.codigoPrdVendido == codigoPrd)
+        else if (v.codigoPrdVendido == codigoPrdDeletado)
         {
-            printf("\nApaguei a venda: %d.", v.codigoVenda);
             v.vendaAtiva = 0;
             fseek(arqVendas, leitor * sizeof(Venda), SEEK_SET);
             fwrite(&v, sizeof(Venda), 1, arqVendas);
@@ -49,7 +46,6 @@ void ExcluirVendasAtreladas(int codigoPrd)
         leitor++;
     }
     fclose(arqVendas);
-    getchar();
 }
 
 int VerificarAtvVnd() // Retorna a posicao do primeira venda desativada. Se n tiver, retorna -1.
@@ -61,7 +57,7 @@ int VerificarAtvVnd() // Retorna a posicao do primeira venda desativada. Se n ti
 
     arqVendas = fopen("vendas", "rb");
 
-    while(1)
+    while (1)
     {
         fread(&v, sizeof(Venda), 1, arqVendas);
         if (feof(arqVendas))
@@ -88,12 +84,12 @@ int ProcurarVenda(int codigoVenda) // Retorna a posicao da venda a partir do có
 
     arqVendas = fopen("vendas", "rb");
 
-    while(1)
+    while (1)
     {
         fread(&v, sizeof(v), 1, arqVendas);
-        if(feof(arqVendas))
+        if (feof(arqVendas))
             break;
-        if(v.codigoVenda == codigoVenda)
+        if (v.codigoVenda == codigoVenda)
         {
             fclose(arqVendas);
             return posPesquisa;
@@ -113,7 +109,7 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
     arqProdutos = fopen("produtos", "rb");
 
-    while(1)
+    while (1)
     {
         fread(&p, sizeof(Produto), 1, arqProdutos);
         if (feof(arqProdutos))
@@ -133,43 +129,54 @@ int VerificarAtvPrd() // Retorna a posicao do primeiro item desativado.
 
 int ProcurarProduto(int codigoProduto) // Retorna a posicao do produto a partir de seu código.
 {
-    FILE *arqProduto;
+    FILE *arqProdutos;
     Produto p;
 
     int posicaoEncontrado = 0;
 
-    arqProduto = fopen("produtos", "rb");
+    arqProdutos = fopen("produtos", "rb");
 
-    if (arqProduto == NULL)
+    if (arqProdutos == NULL)
     {
         return -1;
     }
     else
     {
-        while(1)
+        while (1)
         {
-            fread(&p, sizeof(p), 1, arqProduto);
-            if (feof(arqProduto))
+            fread(&p, sizeof(p), 1, arqProdutos);
+            if (feof(arqProdutos))
                 break;
             if (codigoProduto == p.codigoProduto)
             {
-                // printf("\n\nENCONTROU O MALDITO");
-                fclose(arqProduto);
+                fclose(arqProdutos);
                 return posicaoEncontrado;
             }
             posicaoEncontrado++;
         }
-        fclose(arqProduto);
+        fclose(arqProdutos);
         return -1;
     }
 }
 
-int ExisteProduto() // Retorna 0 se não existir um arquivo chamado produto.
+int ExisteVenda() // Retorna 0 se não existir um arquivo chamado vendas.
+{
+    FILE *arqVendas;
+
+    arqVendas = fopen("vendas", "rb");
+    if (arqVendas == NULL)
+    {
+        return 0;
+    }
+    fclose(arqVendas);
+    return 1;
+}
+
+int ExisteProduto() // Retorna 0 se não existir um arquivo chamado produtos.
 {
     FILE *arqProduto;
 
     arqProduto = fopen("produtos", "rb");
-
     if (arqProduto == NULL)
     {
         return 0;
@@ -220,9 +227,6 @@ void AdicionarVenda()
         }
         fread(&codigoVenda, sizeof(codigoVenda), 1, arqCodigoVnd);
 
-        arqVendas = fopen("vendas", "a+b");
-        fclose(arqVendas);
-
         system("clear");
         printf("======== Adicionando Um Novo Produto ========");
         printf("\n\nDigite o código do produto vendido: ");
@@ -233,8 +237,12 @@ void AdicionarVenda()
         v.vendaAtiva = 1;
 
         arqVendas = fopen("vendas", "r+b");
+        if (arqVendas == NULL)
+        {
+            arqVendas = fopen("vendas", "w+b");
+        }
 
-        if(VerificarAtvVnd() < 0)
+        if (VerificarAtvVnd() < 0)
         {
             fseek(arqVendas, 0, SEEK_END);
             fwrite(&v, sizeof(Venda), 1, arqVendas);
@@ -261,16 +269,21 @@ void ListarVendas()
     Venda v;
     Produto p;
 
-    arqVendas = fopen("vendas", "a+b");
+    arqVendas = fopen("vendas", "rb");
     arqProdutos = fopen("produtos", "rb");
 
-    if (arqVendas == NULL)
-        printf("ERRO NA ABERTURA DO ARQUIVO");
+    if (!ExisteVenda())
+    {
+        printf("\n\nNenhuma venda registrada.");
+        printf("\n\nPressione enter para continuar. . .");
+        getchar();
+        return;
+    }
     else
     {
         system("clear");
         printf("======== Lista de Vendas ========\n");
-        while(1)
+        while (1)
         {
             fread(&v, sizeof(v), 1, arqVendas); // 1 = Quantos structs setão lidos.
             if (feof(arqVendas))
@@ -305,6 +318,14 @@ void RemoverVenda()
 
     int select, codigoVenda, posVenda, posProduto, select2;
 
+    if (!ExisteVenda())
+    {
+        printf("\n\nNenhuma venda registrada.");
+        printf("\n\nPressione enter para continuar. . .");
+        getchar();
+        return;
+    }
+
     do
     {
         system("clear");
@@ -333,7 +354,7 @@ void RemoverVenda()
         printf("Digite o código da venda: ");
         scanf("%d%*c", &codigoVenda);
 
-        if(ProcurarVenda(codigoVenda) < 0)
+        if (ProcurarVenda(codigoVenda) < 0)
         {
             system("clear");
             printf("Código não encontrado.\n\nVerifique o código da venda na lista de vendas.");
@@ -364,7 +385,7 @@ void RemoverVenda()
                 printf("\nO valor de venda é: R$%.2f.", p.valorVenda);
                 printf("\nO lucro é: R$%.2f.", (p.valorVenda - p.valorCompra) * v.quantidadeVendida);
 
-                if(v.vendaAtiva == 1)
+                if (v.vendaAtiva == 1)
                     printf("\n\nA venda está: ATIVA");
                 else
                     printf("\n\nA venda está: INATIVA");
@@ -430,13 +451,10 @@ void AdicionarProduto()
             continue;
         }
 
-        arqProdutos = fopen("produtos", "a+b");
-        fclose(arqProdutos);
-
         arqCodigoPrd = fopen("codigoPrd", "r+b");
-        if(arqCodigoPrd == NULL)
+        if (arqCodigoPrd == NULL)
         {
-            arqCodigoPrd = fopen("codigoPrd", "wb");
+            arqCodigoPrd = fopen("codigoPrd", "w+b");
             fwrite(&codigoDoPrd, sizeof(codigoDoPrd), 1, arqCodigoPrd);
             rewind(arqCodigoPrd);
         }
@@ -459,6 +477,10 @@ void AdicionarProduto()
         fwrite(&codigoDoPrd, sizeof(codigoDoPrd), 1, arqCodigoPrd);
 
         arqProdutos = fopen("produtos", "r+b");
+        if (arqProdutos == NULL)
+        {
+            arqProdutos = fopen("produtos", "w+b");
+        }
 
         if (VerificarAtvPrd() < 0)
         {
@@ -477,7 +499,11 @@ void AdicionarProduto()
 
 void ListarProdutos()
 {
-    if(!ExisteProduto())
+
+    FILE *arqProdutos;
+    Produto p;
+
+    if (!ExisteProduto())
     {
         printf("========\n\nNenhum produto cadastrado.");
         printf("\n\nAdicione um produto para acessar essa opção.");
@@ -485,9 +511,6 @@ void ListarProdutos()
         getchar();
         return;
     }
-
-    FILE *arqProdutos;
-    Produto p;
 
     arqProdutos = fopen("produtos", "a+b");
     if (arqProdutos == NULL)
@@ -498,7 +521,7 @@ void ListarProdutos()
         printf("+=========================+\n");
         printf("|     Lista de Produtos   |\n");
         printf("+=========================+\n");
-        while(1)
+        while (1)
         {
             fread(&p, sizeof(p), 1, arqProdutos); // 1 = Quantos structs setão lidos.
             if (feof(arqProdutos))
@@ -520,7 +543,7 @@ void ListarProdutos()
 
 void RemoverProduto()
 {
-    if(!ExisteProduto())
+    if (!ExisteProduto())
     {
         printf("========\n\nNenhum produto cadastrado.");
         printf("\n\nAdicione um produto para acessar essa opção.");
@@ -587,7 +610,7 @@ void RemoverProduto()
             printf("\nResposta: ");
             scanf("%d%*c", &p.produtoAtivo);
 
-            if(p.produtoAtivo == 0)
+            if (p.produtoAtivo == 0)
             {
                 ExcluirVendasAtreladas(p.codigoProduto);
             }
