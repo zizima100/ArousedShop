@@ -29,23 +29,27 @@ void ExcluirVendasAtreladas(int codigoPrdDeletado)
     int leitor = 0;
 
     arqVendas = fopen("vendas", "r+b");
-
-    while (1)
+    if (arqVendas == NULL)
+        return;
+    else
     {
-        fread(&v, sizeof(Venda), 1, arqVendas);
-        if (feof(arqVendas))
+        while (1)
         {
-            break;
+            fread(&v, sizeof(Venda), 1, arqVendas);
+            if (feof(arqVendas))
+            {
+                break;
+            }
+            else if (v.codigoPrdVendido == codigoPrdDeletado)
+            {
+                v.vendaAtiva = 0;
+                fseek(arqVendas, leitor * sizeof(Venda), SEEK_SET);
+                fwrite(&v, sizeof(Venda), 1, arqVendas);
+            }
+            leitor++;
         }
-        else if (v.codigoPrdVendido == codigoPrdDeletado)
-        {
-            v.vendaAtiva = 0;
-            fseek(arqVendas, leitor * sizeof(Venda), SEEK_SET);
-            fwrite(&v, sizeof(Venda), 1, arqVendas);
-        }
-        leitor++;
+        fclose(arqVendas);
     }
-    fclose(arqVendas);
 }
 
 int VerificarAtvVnd() // Retorna a posicao do primeira venda desativada. Se n tiver, retorna -1.
